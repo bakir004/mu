@@ -1,0 +1,20 @@
+\subsection{Priprema i transformacija podataka}\label{sec:priprema}
+Opisati \textbf{koji atributi su obrađeni, na koji način i zašto}. Ne morate
+prikazivati Python kod, nego odluke i njihove posljedice.
+
+\begin{table}[htbp]\centering
+\caption{Primijenjeni postupci pripreme podataka}\label{tab:priprema}
+\small
+\begin{tabularx}{\linewidth}{@{}p{.25\linewidth}Y Y@{}}\toprule
+Atribut(i) & Postupak & Razlog / posljedica \\ \midrule
+\dopuni{atribut(i)} & \dopuni{npr. obrada nedostajućih vrijednosti} & \dopuni{zašto} \\
+\dopuni{atribut(i)} & \dopuni{npr. kodiranje kategorija} & \dopuni{zašto} \\
+\dopuni{atribut(i)} & \dopuni{npr. uklanjanje ili zadržavanje} & \dopuni{zašto} \\
+\bottomrule\end{tabularx}
+\end{table}
+
+\textbf{Važna napomena.} Pripremu razdvojiti na opšte korake i transformacije
+koje zavise od algoritma. Imputacija, skaliranje i kodiranje koji uče parametre
+iz podataka moraju se uklopiti u odgovarajući \emph{pipeline} i učiti samo na
+trening skupu. Oversampling/undersampling se ne provodi na testnom skupu.
+\referencaKod{1.4 Priprema podataka}

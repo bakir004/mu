@@ -1,0 +1,8 @@
+Ovdje stavite PNG/PDF grafikone koje dobijete iz Google Colaba.
+
+Očekivani primjeri:
+- raspodjela_klasa.png
+- korelacije.png
+
+Ako grafikoni jos nisu dodani, Overleaf ce prikazati rezervna mjesta.
+U poglavlju 1.3 slobodno dodajte vise grafikona za sve varijable.

@@ -1,0 +1,6 @@
+1. Ucitajte cijeli ZIP u Overleaf: New Project -> Upload Project.
+2. Otvorite konfiguracija.tex: imena su upisana, algoritme naknadno odaberite.
+3. Svaki clan pise svoje dvije datoteke (literatura i modeli).
+4. Zajednicke sekcije popunjavate direktno po tackama specifikacije.
+5. UPUTSTVO_ZA_TIM.md objasnjava kako povezati Colab bez posebnih oznaka.
+6. main.tex ne mijenjati tokom pisanja.

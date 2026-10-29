@@ -1,0 +1,42 @@
+\subsection{Istraživačka analiza podataka}\label{sec:analiza}
+Ovaj odjeljak obuhvata \textbf{svaki atribut iz korištenog skupa podataka}, uključujući
+ciljnu klasu. Za svaki je potrebno prikazati tip, distribuciju i primjeren opis
+(deskriptivnu statistiku ili frekvencije), a zatim \textbf{objasniti zaključak}.
+
+\subsubsection*{Struktura skupa i kvalitet podataka}
+\dopuni{Navesti dimenzije skupa, tipove varijabli, nedostajuće vrijednosti,
+duplikate i eventualne neuobičajene vrijednosti.}
+
+\subsubsection*{Analiza pojedinačnih varijabli}
+\small
+\begin{longtable}{@{}p{.19\linewidth}p{.16\linewidth}p{.31\linewidth}p{.25\linewidth}@{}}
+\caption{Pregled svih atributa i zaključaka istraživačke analize}\label{tab:atributi}\\
+\toprule Atribut & Tip & Distribucija / statistika & Zapažanje \\ \midrule
+\endfirsthead
+\toprule Atribut & Tip & Distribucija / statistika & Zapažanje \\ \midrule
+\endhead
+\texttt{is\_fraud} & Binarni & \dopuni{broj i udio klasa} & \dopuni{nebalansiranost} \\
+\dopuni{atribut 2} & \dopuni{tip} & \dopuni{mjere ili kategorije} & \dopuni{zaključak} \\
+\dopuni{atribut 3} & \dopuni{tip} & \dopuni{mjere ili kategorije} & \dopuni{zaključak} \\
+\multicolumn{4}{@{}l}{\emph{Dodati po jedan red za svaki preostali atribut iz stvarnog skupa.}} \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+Za \textbf{numeričke} varijable analizirati, gdje je primjereno, srednju vrijednost,
+medijan, standardnu devijaciju, raspone, kvartile i izdvojene vrijednosti.
+Za \textbf{kategoričke} varijable prikazati broj kategorija i njihove učestalosti.
+Odgovarajuće grafikone navesti uz tekst i za svaki obrazložiti uočeni obrazac.
+
+\slika{slike/raspodjela_klasa.png}{Distribucija legitimnih i prevarnih transakcija.}{fig:klase}
+
+\subsubsection*{Povezanost atributa}
+\dopuni{Prikazati i protumačiti korelacije među primjerenim parovima varijabli.
+Po potrebi upotrijebiti različite mjere povezanosti za numeričke i kategoričke
+atribute. Izdvojiti najznačajnije odnose sa ciljnom klasom.}
+\slika{slike/korelacije.png}{Povezanost odabranih numeričkih atributa.}{fig:korelacije}
+
+\subsubsection*{Zaključci analize}
+\dopuni{Sažeti nalaze koji utiču na odluke o pripremi podataka:
+neravnomjeran odnos klasa, nedostajuće vrijednosti, problematični atributi i slično.}
+\referencaKod{1.3 Istraživačka analiza podataka}

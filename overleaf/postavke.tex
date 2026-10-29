@@ -1,0 +1,59 @@
+% Tehnicke postavke. Nema potrebe mijenjati tokom pisanja.
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[bosnian]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{a4paper,left=2.7cm,right=2.7cm,top=2.7cm,bottom=2.7cm}
+\usepackage{setspace}
+\setstretch{1.16}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{needspace}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{url}
+\definecolor{tamnoPlava}{HTML}{173B56}
+\definecolor{akcent}{HTML}{168B90}
+\definecolor{dopunaBoja}{HTML}{96512C}
+\hypersetup{colorlinks=true,linkcolor=tamnoPlava,citecolor=tamnoPlava,urlcolor=akcent,
+  pdftitle={Detekcija prevarnih finansijskih transakcija},pdfauthor={Projektni tim}}
+\titleformat{\section}{\Large\bfseries\color{tamnoPlava}}{\thesection.}{0.75em}{}
+\titleformat{\subsection}{\large\bfseries\color{tamnoPlava}}{\thesubsection.}{0.65em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{tamnoPlava}}{\thesubsubsection.}{0.65em}{}
+\titlespacing*{\section}{0pt}{23pt}{9pt}
+\titlespacing*{\subsection}{0pt}{18pt}{8pt}
+\titlespacing*{\subsubsection}{0pt}{14pt}{5pt}
+\captionsetup{font=small,labelfont=bf}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Mašinsko učenje -- Projekat I}
+\fancyhead[R]{\small 2026/2027.}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{15pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlist[itemize]{leftmargin=*,topsep=4pt,itemsep=2pt}
+\setlist[enumerate]{leftmargin=*,topsep=4pt,itemsep=2pt}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\dopuni}[1]{\textcolor{dopunaBoja}{\textit{[Dopuniti: #1]}}}
+% Ovo je JEDINI format reference na kod: jedna poveznica + naslov Colab odjeljka.
+\newcommand{\referencaKod}[1]{\par\smallskip{\small\textbf{Kod:} \ColabBiljeznica{}, odjeljak \emph{„#1“}.}\par}
+% Rezervno mjesto za slike; dokument se kompajlira i bez PNG grafikona.
+\newcommand{\slika}[3]{%
+\begin{figure}[htbp]\centering
+\IfFileExists{#1}{\includegraphics[width=.86\linewidth,height=6cm,keepaspectratio]{#1}}{%
+\fbox{\parbox[c][2.2cm][c]{.81\linewidth}{\centering\small\textit{Mjesto za grafikon.}\\\texttt{\detokenize{#1}}}}}%
+\caption{#2}\label{#3}\end{figure}}
+\addto\captionsbosnian{\renewcommand{\tablename}{Tabela}}
+\renewcommand{\figurename}{Slika}

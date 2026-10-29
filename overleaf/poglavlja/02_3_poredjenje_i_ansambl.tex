@@ -1,0 +1,41 @@
+\subsection{Poređenje i ansambl-model}\label{sec:ansambl}
+\subsubsection*{Poređenje pojedinačnih modela}
+Uporediti svih pet modela na \textbf{istom testnom skupu i po istim
+metrikama}. Obrazložiti razlike u performansama; naročito komentarisati
+koliko koji model prepoznaje prevarne transakcije i koliko često pogrešno
+obilježava legitimne transakcije kao prevarne.
+
+\begin{table}[htbp]\centering
+\caption{Zajedničko poređenje pet klasifikacijskih modela}\label{tab:usporedba}
+\small
+\begin{tabularx}{\linewidth}{@{}Yccccc@{}}\toprule
+Model & Tačnost & Precision$_1$ & Recall$_1$ & F1$_1$ & Kappa \\ \midrule
+\AlgJedan & -- & -- & -- & -- & -- \\
+\AlgDva & -- & -- & -- & -- & -- \\
+\AlgTri & -- & -- & -- & -- & -- \\
+\AlgCetiri & -- & -- & -- & -- & -- \\
+\AlgPet & -- & -- & -- & -- & -- \\
+\bottomrule\end{tabularx}
+\end{table}
+\dopuni{Navesti konkretne rezultate i objasniti razloge različitih performansi,
+uzimajući u obzir pripremu, balansiranje i podešavanje modela.}
+
+\subsubsection*{Izbor i izgradnja ansambl-modela}
+\dopuni{Navesti odabranu metodu kombinovanja modela (npr. glasanje ili
+stacking), njeno obrazloženje, koje modele uključuje, način treniranja,
+validaciju i odgovarajući pipeline.}
+
+\begin{table}[htbp]\centering
+\caption{Poređenje ansambl-modela i najboljeg pojedinačnog modela}\label{tab:rezultat-ansambl}
+\begin{tabularx}{\linewidth}{@{}Yccc@{}}\toprule
+Model & Precision$_1$ & Recall$_1$ & F1$_1$ \\ \midrule
+Najbolji pojedinačni model & -- & -- & -- \\
+Ansambl-model & -- & -- & -- \\
+\bottomrule\end{tabularx}
+\end{table}
+
+\subsubsection*{Diskusija rezultata i zaključak}
+\dopuni{Objasniti je li ansambl postigao poboljšanje, prema kojoj metrici,
+koliko je pouzdan rezultat te da li je polazna hipoteza potvrđena. Navesti
+ograničenja rada i glavne zaključke bez dodavanja novog koda.}
+\referencaKod{2.3 Poređenje modela i ansambl}

@@ -1,0 +1,195 @@
+
+\Needspace{12\baselineskip}
+\subsubsection*{Naučnoistraživački rad -- \ClanJedan}
+
+\textbf{Naslov rada:}
+\emph{A supervised machine learning algorithm for detecting
+and predicting fraud in credit card transactions}.\\
+
+\textbf{Autori:}
+Jonathan Kwaku Afriyie, Kassim Tawiah, Wilhemina Adoma Pels,
+Sandra Addai-Henne, Harriet Achiaa Dwamena, Emmanuel Odame Owiredu,
+Samuel Amening Ayeh i John Eshun.\\
+
+\textbf{Izvor:}
+\emph{Decision Analytics Journal}, vol. 6, članak 100163,
+2023. \cite{afriyie2023fraud}
+
+\begin{table}[H]
+\centering
+\caption{Sažeti pregled naučnoistraživačkog rada Afriyie i saradnika (2023)}
+\label{tab:afriyie-pregled}
+\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{@{}p{0.25\linewidth}Y@{}}
+\toprule
+\textbf{Stavka} & \textbf{Opis} \\
+\midrule
+
+Problem &
+Detekcija prevarnih transakcija kreditnim karticama kao problem
+binarne klasifikacije, pri čemu se razlikuju legitimne i
+prevarne transakcije. \\
+
+Skup podataka &
+\emph{Credit Card Transactions Fraud Detection Dataset}
+(Kaggle), simuliran pomoću alata Sparkov.
+U radu se navodi 555\,719 transakcija i 23 kolone
+u početnom skupu podataka. \\
+
+Korištene metode &
+Logistička regresija (Logistic Regression),
+stablo odlučivanja (Decision Tree) i slučajna šuma
+(Random Forest). Priprema podataka uključuje
+skaliranje i nasumično smanjivanje većinske klase
+(undersampling). \\
+
+Metrike &
+Tačnost (accuracy), preciznost (precision),
+osjetljivost (recall/sensitivity), specifičnost,
+F1-mjera i ROC-AUC. \\
+
+Najbolji rezultat &
+\textbf{Random Forest}: tačnost \textbf{96\%},
+ROC-AUC \textbf{98,9\%}.
+Prijavljene vrijednosti: recall 0,97,
+precision 0,09 i F1-mjera 0,17. \\
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Cilj i istraživački problem.}
+
+Autori istražuju koliko uspješno različiti algoritmi nadziranog
+mašinskog učenja razlikuju prevarne od legitimnih transakcija.
+Osnovni cilj jeste uporediti performanse tri klasifikacijska
+algoritma i utvrditi koji je najpogodniji za analizirani
+skup podataka.
+
+Dodatno istražuju obrasce povezane s iznosom i vremenom
+transakcije, kategorijom trgovca te pojedinim
+karakteristikama korisnika.
+
+\textbf{Skup podataka i njegova nebalansiranost.}
+
+Rad koristi javno dostupan Kaggle skup simuliranih transakcija,
+obavljenih tokom 2020. godine u Sjedinjenim Američkim Državama.
+
+Skup obuhvata numeričke i kategoričke atribute,
+a ciljna varijabla predstavlja status prevare.
+
+Nakon postupaka obrade, u Tabeli 4 rada prikazano je
+482\,672 legitimnih i 2\,135 prevarnih transakcija,
+odnosno približno 99,6\% i 0,4\%.
+
+Takva raspodjela predstavlja izraženu nebalansiranost klasa,
+pa sama ukupna tačnost nije dovoljna za procjenu
+uspješnosti klasifikatora.
+
+\textbf{Priprema podataka i korištene metode.}
+
+Autori navode čišćenje podataka, transformaciju numeričkih
+atributa na raspon od 0 do 1 i primjenu metode
+\emph{random undersampling}.
+
+Ova metoda smanjuje broj primjera većinske klase kako bi
+se ublažila pristrasnost modela prema legitimnim transakcijama.
+
+Na Slici 1 rada prikazan je uravnotežen uzorak s
+1\,708 prevarnih i 1\,707 legitimnih transakcija.
+
+Za klasifikaciju se zatim koriste logistička regresija,
+jedno stablo odlučivanja i Random Forest,
+koji kombinuje veći broj stabala.
+
+\textbf{Poređenje eksperimentalnih rezultata.}
+
+U Tabeli~\ref{tab:afriyie-rezultati} prikazane su vrijednosti
+koje su autori objavili u Tabeli 11 i uz ROC krive (Slika 16).
+
+\begin{table}[H]
+\centering
+\caption{Poređenje rezultata klasifikacijskih algoritama iz rada}
+\label{tab:afriyie-rezultati}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+
+\begin{tabularx}{\linewidth}{@{}Y c c c c c c@{}}
+\toprule
+
+\textbf{Model} &
+\textbf{Acc.} &
+\textbf{Prec.} &
+\textbf{Recall} &
+\textbf{F1} &
+\textbf{Spec.} &
+\textbf{AUC} \\
+
+\midrule
+
+Decision Tree &
+0,92 & 0,05 & 0,93 & 0,09 & 0,92 & 0,945 \\
+
+Logistic Regression &
+0,92 & 0,04 & 0,76 & 0,08 & 0,92 & 0,872 \\
+
+\textbf{Random Forest} &
+\textbf{0,96} &
+\textbf{0,09} &
+\textbf{0,97} &
+\textbf{0,17} &
+\textbf{0,96} &
+\textbf{0,989} \\
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Tumačenje rezultata.}
+
+Random Forest je postigao najveće vrijednosti svih
+prikazanih metrika.
+
+Njegov ROC-AUC od 0,989 ukazuje na veoma dobru sposobnost
+razlikovanja klasa pri promjeni klasifikacijskog praga.
+
+Međutim, precision od samo 0,09 znači da je tek približno
+9\% transakcija označenih kao prevarne zaista bilo prevarno.
+
+Iz objavljene konfuzijske matrice (Tabela 7 rada)
+vidi se da je model prepoznao 409 prevara i propustio 18,
+ali je 4\,052 legitimne transakcije pogrešno označio
+kao prevarne.
+
+Zato visoka tačnost i ROC-AUC ne znače da model proizvodi
+malo lažnih alarma.
+
+Niska F1-mjera (0,17) dodatno ukazuje na neravnotežu
+između preciznosti i osjetljivosti modela.
+
+\textbf{Dodatna zapažanja iz istraživačke analize.}
+
+Autori izvještavaju da se veći broj prevarnih transakcija
+u njihovom skupu javlja između 22:00 i 04:00 GMT te
+posebno razmatraju starosnu grupu korisnika iznad
+60 godina i kategoriju kupovine.
+
+Budući da su podaci simulirani, ova zapažanja
+predstavljaju obrasce uočene u posmatranom skupu,
+a ne dokazane zakonitosti stvarnog finansijskog poslovanja.
+
+\textbf{Zaključak i značaj za istraživanje.}
+
+Istraživanje upućuje na to da Random Forest može biti
+uspješan izbor za detekciju prevarnih transakcija,
+posebno prema ROC-AUC i osjetljivosti.
+
+Istovremeno pokazuje da izrazita nebalansiranost klasa
+zahtijeva pažljivu evaluaciju i praćenje lažnih alarma.
+
+Nalazi rada predstavljaju osnovu za očekivanje da će
+metode zasnovane na stablima ostvarivati konkurentne rezultate,
+ali i da će precision, recall i F1-mjera biti važnije
+za praktičnu interpretaciju nego sama ukupna tačnost.

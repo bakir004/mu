@@ -1,0 +1,31 @@
+\subsection{Odabir teme i skupa podataka}\label{sec:podaci}
+\textbf{Tema.} Predmet projekta je prepoznavanje prevarnih finansijskih transakcija na osnovu
+karakteristika pojedinačnih transakcija. Zadatak se posmatra kao \textbf{nadzirana binarna
+klasifikacija}, jer je za treniranje poznata ciljna klasa.
+
+\textbf{Izvor.} Kao polazni skup koristi se \emph{Credit Card Transactions Fraud Detection Dataset}
+sa platforme Kaggle \cite{kaggle_fraud}. U daljem radu analizira se stvarno korištena
+verzija podataka. Ciljni atribut je \texttt{is\_fraud}: vrijednost 0 označava legitimnu,
+a 1 prevarnu transakciju.
+
+\begin{table}[htbp]\centering
+\caption{Osnovne karakteristike korištenog skupa podataka}\label{tab:osnovni}
+\begin{tabularx}{\linewidth}{@{}p{.44\linewidth}Y@{}}\toprule
+Karakteristika & Podatak \\ \midrule
+Naziv datoteke & \dopuni{naziv korištene datoteke} \\
+Broj instanci & \dopuni{broj instanci} \\
+Broj atributa & \dopuni{broj atributa} \\
+Numerički atributi & \dopuni{broj i primjeri} \\
+Kategorički atributi & \dopuni{broj i primjeri} \\
+Ciljna varijabla & \texttt{is\_fraud} (0 -- legitimna; 1 -- prevarna) \\
+Udio klase 1 & \dopuni{udio prevarnih transakcija u \%} \\
+Način formiranja korištenog skupa & \dopuni{kratko opisati izbor redova i atributa} \\
+\bottomrule\end{tabularx}
+\end{table}
+
+\textbf{Provjera uslova specifikacije.} Na korištenom skupu potvrditi najmanje 1000
+instanci, najmanje 15 atributa, prisustvo numeričkih i kategoričkih atributa te
+postojanje ciljne varijable. Navesti šta atributi predstavljaju i koje su eventualne
+ograničenosti podataka. Ovdje ne treba prepisivati sve kolone originalnog skupa ako
+nisu u stvarnoj verziji korištenoj za eksperimente.
+\referencaKod{1.1 Odabir i učitavanje skupa podataka}

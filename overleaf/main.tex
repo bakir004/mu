@@ -1,0 +1,32 @@
+% Glavni dokument. Ne upisujte tekst rada direktno ovdje.
+% Overleaf: Compiler = pdfLaTeX, Main document = main.tex.
+\documentclass[12pt,a4paper]{article}
+\input{postavke}
+\input{konfiguracija}
+\begin{document}
+\hypersetup{pageanchor=false}
+\input{poglavlja/00_naslovna}
+\clearpage
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\section{Odabir, analiza i priprema podataka}
+\input{poglavlja/01_1_odabir_podataka}
+\input{poglavlja/01_2_naucni_radovi}
+\input{poglavlja/01_3_analiza_podataka}
+\input{poglavlja/01_4_priprema_podataka}
+
+\section{Izgradnja klasifikacijskih modela}
+\input{poglavlja/02_1_odabir_algoritama}
+\input{poglavlja/02_2_individualni_modeli}
+\input{poglavlja/02_3_poredjenje_i_ansambl}
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{Literatura}
+\bibliographystyle{ieeetr}
+\bibliography{literatura/izvori}
+\end{document}
