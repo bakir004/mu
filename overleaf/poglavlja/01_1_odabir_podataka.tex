@@ -4,28 +4,85 @@ karakteristika pojedinačnih transakcija. Zadatak se posmatra kao \textbf{nadzir
 klasifikacija}, jer je za treniranje poznata ciljna klasa.
 
 \textbf{Izvor.} Kao polazni skup koristi se \emph{Credit Card Transactions Fraud Detection Dataset}
-sa platforme Kaggle \cite{kaggle_fraud}. U daljem radu analizira se stvarno korištena
-verzija podataka. Ciljni atribut je \texttt{is\_fraud}: vrijednost 0 označava legitimnu,
-a 1 prevarnu transakciju.
+sa platforme Kaggle \cite{kaggle_fraud}. Skup je simuliran alatom \emph{Sparkov Data Generation}
+i obuhvata transakcije približno 1\,000 korisnika kod oko 800 trgovaca u periodu od
+1.~januara 2019. do 31.~decembra 2020. godine. Objavljen je u dvije datoteke:
+\texttt{fraudTrain.csv} (1\,296\,675 transakcija) i \texttt{fraudTest.csv} (555\,719 transakcija).
+Ciljni atribut je \texttt{is\_fraud}: vrijednost 0 označava legitimnu, a 1 prevarnu transakciju.
+
+\textbf{Formiranje korištenog skupa.} Originalni skup je izrazito nebalansiran -- u
+\texttt{fraudTrain.csv} je samo 7\,506 prevarnih transakcija (približno 0,58\,\%). Zbog veličine
+originalnih datoteka i potrebe da sve faze rada (analiza, više modela, unakrsna validacija i
+podešavanje hiperparametara) budu izvodive u Google Colabu, iz \texttt{fraudTrain.csv} su
+izvedene tri manje verzije skupa:
+\begin{itemize}
+  \item \texttt{fraud\_balanced.csv} -- \textbf{osnovni radni skup}: sve 7\,506 prevarnih
+        transakcija i isto toliko nasumično odabranih legitimnih transakcija
+        (\emph{random undersampling}, \texttt{random\_state=42}), odnos klasa 50/50;
+  \item \texttt{fraud\_15k.csv} i \texttt{fraud\_50k.csv} -- stratifikovani uzorci od 15\,000
+        i 50\,000 transakcija koji zadržavaju originalni udio prevara (0,58\,\%). Ovi skupovi
+        služe za provjeru ponašanja modela u realističnom, nebalansiranom okruženju.
+\end{itemize}
+Sve tri verzije zadržavaju svih 22 kolone originalnog skupa (prva, indeksna kolona
+originalne datoteke je izostavljena).
 
 \begin{table}[htbp]\centering
 \caption{Osnovne karakteristike korištenog skupa podataka}\label{tab:osnovni}
-\begin{tabularx}{\linewidth}{@{}p{.44\linewidth}Y@{}}\toprule
+\begin{tabularx}{\linewidth}{@{}p{.40\linewidth}Y@{}}\toprule
 Karakteristika & Podatak \\ \midrule
-Naziv datoteke & \dopuni{naziv korištene datoteke} \\
-Broj instanci & \dopuni{broj instanci} \\
-Broj atributa & \dopuni{broj atributa} \\
-Numerički atributi & \dopuni{broj i primjeri} \\
-Kategorički atributi & \dopuni{broj i primjeri} \\
+Naziv datoteke & \texttt{fraud\_balanced.csv} (dodatno \texttt{fraud\_15k.csv} i \texttt{fraud\_50k.csv}) \\
+Broj instanci & 15\,012 (odnosno 15\,000 i 50\,000) \\
+Broj atributa & 21 ulazni atribut + ciljna varijabla \texttt{is\_fraud} (ukupno 22 kolone) \\
+Numerički atributi & 9: \texttt{amt}, \texttt{lat}, \texttt{long}, \texttt{merch\_lat}, \texttt{merch\_long},
+  \texttt{city\_pop}, \texttt{unix\_time}, \texttt{cc\_num}, \texttt{zip} \\
+Kategorički i tekstualni atributi & 12: \texttt{category}, \texttt{gender}, \texttt{state}, \texttt{city},
+  \texttt{job}, \texttt{merchant}, \texttt{first}, \texttt{last}, \texttt{street}, \texttt{trans\_num},
+  te datumi \texttt{trans\_date\_trans\_time} i \texttt{dob} \\
 Ciljna varijabla & \texttt{is\_fraud} (0 -- legitimna; 1 -- prevarna) \\
-Udio klase 1 & \dopuni{udio prevarnih transakcija u \%} \\
-Način formiranja korištenog skupa & \dopuni{kratko opisati izbor redova i atributa} \\
+Udio klase 1 & 50,00\,\% u \texttt{fraud\_balanced.csv}; 0,58\,\% u \texttt{fraud\_15k.csv} (87 prevara)
+  i \texttt{fraud\_50k.csv} (289 prevara) \\
+Nedostajuće vrijednosti / duplikati & nema / nema \\
+Vremenski raspon (radni skup) & 1.~1.~2019. -- 21.~6.~2020. \\
 \bottomrule\end{tabularx}
 \end{table}
 
-\textbf{Provjera uslova specifikacije.} Na korištenom skupu potvrditi najmanje 1000
-instanci, najmanje 15 atributa, prisustvo numeričkih i kategoričkih atributa te
-postojanje ciljne varijable. Navesti šta atributi predstavljaju i koje su eventualne
-ograničenosti podataka. Ovdje ne treba prepisivati sve kolone originalnog skupa ako
-nisu u stvarnoj verziji korištenoj za eksperimente.
+\begin{table}[htbp]\centering
+\caption{Opis atributa skupa podataka}\label{tab:atributi}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}p{.27\linewidth}p{.17\linewidth}Y@{}}\toprule
+Atribut & Tip & Značenje \\ \midrule
+\texttt{trans\_date\_trans\_time} & datum/vrijeme & datum i vrijeme transakcije \\
+\texttt{cc\_num} & identifikator & broj kartice (977 različitih kartica) \\
+\texttt{merchant} & kategorički & naziv trgovca (693 vrijednosti) \\
+\texttt{category} & kategorički & kategorija kupovine (14 vrijednosti, npr. \texttt{grocery\_pos}, \texttt{shopping\_net}) \\
+\texttt{amt} & numerički & iznos transakcije u USD \\
+\texttt{first}, \texttt{last} & tekstualni & ime i prezime vlasnika kartice \\
+\texttt{gender} & kategorički & spol vlasnika kartice (F/M) \\
+\texttt{street}, \texttt{city}, \texttt{state}, \texttt{zip} & kategorički & adresa vlasnika kartice (51 savezna država) \\
+\texttt{lat}, \texttt{long} & numerički & geografske koordinate vlasnika kartice \\
+\texttt{city\_pop} & numerički & broj stanovnika grada vlasnika kartice \\
+\texttt{job} & kategorički & zanimanje vlasnika kartice (493 vrijednosti) \\
+\texttt{dob} & datum & datum rođenja vlasnika kartice \\
+\texttt{trans\_num} & identifikator & jedinstveni identifikator transakcije \\
+\texttt{unix\_time} & numerički & vrijeme transakcije u UNIX formatu \\
+\texttt{merch\_lat}, \texttt{merch\_long} & numerički & geografske koordinate trgovca \\
+\texttt{is\_fraud} & binarni (klasa) & 0 -- legitimna, 1 -- prevarna transakcija \\
+\bottomrule\end{tabularx}
+\end{table}
+
+\textbf{Provjera uslova specifikacije.} Radni skup ima 15\,012 instanci ($\geq 1000$) i
+21 ulazni atribut ($\geq 15$). Sadrži i numeričke atribute (npr. iznos, koordinate, broj
+stanovnika) i kategoričke atribute (npr. kategorija kupovine, spol, država, zanimanje),
+pa je mješovitog tipa. Ciljna varijabla \texttt{is\_fraud} je unaprijed određena i binarna.
+
+\textbf{Ograničenja podataka.} Podaci su simulirani, pa uočeni obrasci ne moraju u potpunosti
+odgovarati stvarnom finansijskom poslovanju. Dio kolona su identifikatori ili lični podaci
+(\texttt{trans\_num}, \texttt{cc\_num}, \texttt{first}, \texttt{last}, \texttt{street}) koji
+nemaju opštu prediktivnu vrijednost i mogu dovesti do pretjeranog prilagođavanja modela.
+Svi nazivi trgovaca imaju prefiks \texttt{fraud\_} koji je artefakt generatora, a ne
+indikator prevare. Datumske kolone je potrebno transformisati (npr. sat transakcije,
+starost korisnika) da bi bile upotrebljive. Konačno, balansirani skup ne odražava stvarni
+udio prevara, pa se metrike poput preciznosti dobijene na njemu ne mogu direktno prenijeti
+na realističnu raspodjelu; zato se zadržavaju i stratifikovani uzorci s originalnim odnosom.
 \referencaKod{1.1 Odabir i učitavanje skupa podataka}

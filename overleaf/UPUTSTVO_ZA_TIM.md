@@ -18,7 +18,7 @@
 | Aldin Velić | `literatura/rad_01.tex` | `modeli/model_01.tex` |
 | Bakir Činjarević | `literatura/rad_02.tex` | `modeli/model_02.tex` |
 | Danijal Alibegović | `literatura/rad_03.tex` | `modeli/model_03.tex` |
-| Haris Mačić | `literatura/rad_04.tex` | `modeli/model_04.tex` |
+| Haris Macić | `literatura/rad_04.tex` | `modeli/model_04.tex` |
 | Kerim Hajdar | `literatura/rad_05.tex` | `modeli/model_05.tex` |
 
 ## 3. Najjednostavnije pozivanje na kod

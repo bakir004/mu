@@ -1,15 +1,116 @@
+
 \Needspace{12\baselineskip}
-\paragraph{Naučnoistraživački rad -- \ClanCetiri}
-\textbf{Naslov i autori:} \dopuni{tačan naslov, autori, godina, izvor i citat u literaturi.}
-\begin{table}[H]\centering
-\caption{Pregled naučnoistraživačkog rada člana \ClanCetiri}
+\subsubsection*{Naučnoistraživački rad -- \ClanCetiri}
+
+\textbf{Naslov rada:}
+\emph{A machine learning based credit card fraud detection using
+the GA algorithm for feature selection}.\\
+
+\textbf{Autori:}
+Emmanuel Ileberi, Yanxia Sun i Zenghui Wang.\\
+
+\textbf{Izvor:}
+\emph{Journal of Big Data}, vol. 9, članak 24,
+2022. \cite{ileberi2022fraud}
+
+\begin{table}[H]
+\centering
+\caption{Sažeti pregled naučnoistraživačkog rada Ileberija i saradnika (2022)}
+\label{tab:ileberi-pregled}
 \small
-\begin{tabularx}{\linewidth}{@{}p{.25\linewidth}Y@{}}\toprule
-Stavka & Sažetak iz rada \\ \midrule
-Problem & \dopuni{koji problem se rješava} \\
-Skup podataka & \dopuni{naziv, veličina i izvor ako su navedeni} \\
-Korištene metode & \dopuni{koji algoritmi su upoređivani} \\
-Metrike & \dopuni{npr. precision, recall, F1, AUC, tačnost} \\
-Najbolji rezultat & \dopuni{broj, metrika i metoda koja ga je ostvarila} \\
-\bottomrule\end{tabularx}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{@{}p{0.25\linewidth}Y@{}}
+\toprule
+\textbf{Stavka} & \textbf{Opis} \\
+\midrule
+
+Problem &
+Detekcija prevarnih transakcija kreditnim karticama uz izbor
+optimalnog podskupa atributa pomoću genetskog algoritma (GA). \\
+
+Skup podataka &
+Evropski skup transakcija kreditnim karticama (Kaggle, septembar 2013.):
+284\,807 transakcija, 0,172\,\% prevara, 30 numeričkih atributa
+(V1--V28 dobijeni PCA transformacijom, \texttt{Time}, \texttt{Amount}).
+Dodatna provjera na sintetičkom skupu s oko 24,4 miliona transakcija. \\
+
+Korištene metode &
+Genetski algoritam za selekciju atributa (funkcija prilagođenosti je
+tačnost Random Foresta); klasifikatori: stablo odlučivanja, Random Forest,
+logistička regresija, ANN i Naive Bayes; SMOTE za uravnotežavanje
+i \emph{min-max} normalizacija. \\
+
+Metrike &
+Tačnost (glavna metrika), osjetljivost (recall), preciznost,
+F1-mjera i AUC. \\
+
+Najbolji rezultat &
+\textbf{GA-RF} s vektorom atributa v5 (13 atributa): tačnost
+\textbf{99,98\,\%}, preciznost 95,34\,\%, recall 72,56\,\%,
+F1-mjera 82,41\,\%. \\
+
+\bottomrule
+\end{tabularx}
 \end{table}
+
+\textbf{Cilj i istraživački problem.}
+Autori smatraju da veliki broj atributa može narušiti performanse
+klasifikatora i predlažu sistem u kojem genetski algoritam bira
+podskup atributa, a zatim se na tom podskupu trenira i upoređuje
+pet klasičnih algoritama mašinskog učenja.
+
+\textbf{Skup podataka i priprema.}
+Korišten je najpoznatiji javni skup za ovaj problem: transakcije
+evropskih korisnika kartica tokom dva dana, sa samo 492 prevare.
+Za razliku od našeg skupa, svi atributi su numerički i anonimizovani.
+Klasna nebalansiranost je ublažena metodom SMOTE, a atributi su
+normalizovani \emph{min-max} postupkom. Genetski algoritam je
+pronašao pet kandidatskih vektora atributa (v1--v5) dužine od 9 do
+18 atributa, a atribut \texttt{Amount} se nalazi u svakom od njih.
+
+\textbf{Poređenje eksperimentalnih rezultata.}
+Tabela~\ref{tab:ileberi-rezultati} prikazuje rezultate za vektor v5
+(Tabela 6 rada) i za vektor v1, na kojem je ostvarena najveća F1-mjera
+(Tabela 2 rada).
+
+\begin{table}[H]
+\centering
+\caption{Rezultati klasifikatora iz rada Ileberija i saradnika (u \%)}
+\label{tab:ileberi-rezultati}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{@{}Y c c c c@{}}
+\toprule
+\textbf{Model (vektor atributa)} & \textbf{Acc.} & \textbf{Recall} & \textbf{Prec.} & \textbf{F1} \\
+\midrule
+\textbf{Random Forest (v5)} & \textbf{99,98} & \textbf{72,56} & \textbf{95,34} & \textbf{82,41} \\
+Stablo odlučivanja (v5) & 99,89 & 72,56 & 65,07 & 68,61 \\
+ANN (v5) & 99,08 & 77,87 & 12,27 & 21,20 \\
+Naive Bayes (v5) & 99,44 & 57,52 & 15,85 & 24,85 \\
+Logistička regresija (v5) & 99,77 & 46,90 & 34,64 & 39,84 \\
+\midrule
+Random Forest (v1) & 99,94 & 76,99 & 89,69 & 82,85 \\
+ANN (v1) & 99,94 & 77,87 & 84,61 & 81,10 \\
+Naive Bayes (v1) & 98,13 & 84,95 & 6,83 & 12,65 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Tumačenje rezultata.}
+Random Forest je najbolji ili među najboljima za svaki vektor atributa.
+Iako svi modeli imaju tačnost iznad 98\,\%, preciznost i F1-mjera se
+drastično razlikuju: Naive Bayes s vektorom v1 ima tačnost 98,13\,\%,
+a preciznost samo 6,83\,\%, što znači da je velika većina transakcija
+koje označi kao prevarne zapravo legitimna. Rezultati pokazuju i da
+izbor atributa snažno utiče na pojedine modele (npr. F1 ANN-a pada
+s 81,10\,\% na 21,20\,\% između vektora v1 i v5). Treba imati na umu
+da autori kao glavnu metriku koriste tačnost, koja je na skupu s
+0,172\,\% prevara slabo informativna.
+
+\textbf{Zaključak i značaj za istraživanje.}
+Rad potvrđuje da je Random Forest pouzdan izbor za detekciju prevara
+i da Naive Bayes ima najlošiji odnos preciznosti i osjetljivosti.
+Za naš projekat je važna i pouka o evaluaciji: kod nebalansiranih
+podataka rezultate treba prikazivati kroz preciznost, recall i
+F1-mjeru za klasu prevare, a ne samo kroz tačnost.

@@ -1,15 +1,113 @@
+
 \Needspace{12\baselineskip}
-\paragraph{Naučnoistraživački rad -- \ClanPet}
-\textbf{Naslov i autori:} \dopuni{tačan naslov, autori, godina, izvor i citat u literaturi.}
-\begin{table}[H]\centering
-\caption{Pregled naučnoistraživačkog rada člana \ClanPet}
+\subsubsection*{Naučnoistraživački rad -- \ClanPet}
+
+\textbf{Naslov rada:}
+\emph{Credit Card Fraud Detection Using Improved Deep Learning Models}.\\
+
+\textbf{Autori:}
+Sumaya S. Sulaiman, Ibraheem Nadher i Sarab M. Hameed.\\
+
+\textbf{Izvor:}
+\emph{Computers, Materials \& Continua}, vol. 78, br. 1, str. 1049--1069,
+2024. \cite{sulaiman2024fraud}
+
+\begin{table}[H]
+\centering
+\caption{Sažeti pregled naučnoistraživačkog rada Sulaiman i saradnika (2024)}
+\label{tab:sulaiman-pregled}
 \small
-\begin{tabularx}{\linewidth}{@{}p{.25\linewidth}Y@{}}\toprule
-Stavka & Sažetak iz rada \\ \midrule
-Problem & \dopuni{koji problem se rješava} \\
-Skup podataka & \dopuni{naziv, veličina i izvor ako su navedeni} \\
-Korištene metode & \dopuni{koji algoritmi su upoređivani} \\
-Metrike & \dopuni{npr. precision, recall, F1, AUC, tačnost} \\
-Najbolji rezultat & \dopuni{broj, metrika i metoda koja ga je ostvarila} \\
-\bottomrule\end{tabularx}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{@{}p{0.25\linewidth}Y@{}}
+\toprule
+\textbf{Stavka} & \textbf{Opis} \\
+\midrule
+
+Problem &
+Detekcija prevara kreditnim karticama pomoću modela dubokog učenja
+i ispitivanje uticaja podešavanja hiperparametara i metoda
+uravnotežavanja na njihove performanse. \\
+
+Skup podataka &
+Evropski skup transakcija kreditnim karticama (Kaggle, septembar 2013.):
+284\,807 transakcija, od kojih su 492 prevarne (0,172\,\%). \\
+
+Korištene metode &
+Autoenkoder (AE), konvolucijska neuronska mreža (CNN) i LSTM mreža;
+podešavanje hiperparametara metodama \emph{random search} i Bayesovom
+optimizacijom (cilj: F1-mjera); uravnotežavanje metodama RUS, SMOTE
+i ADASYN; stratifikovana unakrsna validacija. \\
+
+Metrike &
+Tačnost, stopa detekcije (\emph{detection rate}, tj. recall) i AUC;
+F1-mjera kao funkcija cilja pri podešavanju hiperparametara. \\
+
+Najbolji rezultat &
+\textbf{LSTM + SMOTE} (\emph{random search}): tačnost \textbf{99,2\,\%},
+stopa detekcije \textbf{93,3\,\%}, AUC \textbf{96,3\,\%}. \\
+
+\bottomrule
+\end{tabularx}
 \end{table}
+
+\textbf{Cilj i istraživački problem.}
+Autori polaze od toga da uspješnost modela dubokog učenja u velikoj
+mjeri zavisi od izbora hiperparametara. Cilj je ispitati kako
+sistematsko podešavanje (broj neurona, \emph{dropout}, aktivacijska
+funkcija, veličina \emph{batch}-a, optimizator, funkcija gubitka i
+stopa učenja) u kombinaciji s različitim metodama uravnotežavanja
+utiče na detekciju prevara.
+
+\textbf{Skup podataka i priprema.}
+Korišten je javni evropski skup sa 30 numeričkih atributa i izrazitom
+nebalansiranošću klasa. Podaci su podijeljeni na skup za treniranje,
+validaciju i testiranje stratifikovanom unakrsnom validacijom, a
+uravnotežavanje (RUS, SMOTE ili ADASYN) primijenjeno je \emph{samo
+na skupu za treniranje}. Za svaki model izvedeno je osam pokretanja
+(četiri slučajnom pretragom i četiri Bayesovom optimizacijom), uz
+četiri scenarija: bez uravnotežavanja, RUS, SMOTE i ADASYN.
+
+\textbf{Poređenje eksperimentalnih rezultata.}
+Tabela~\ref{tab:sulaiman-rezultati} prikazuje dio rezultata iz Tabele 3
+rada (podešavanje hiperparametara slučajnom pretragom).
+
+\begin{table}[H]
+\centering
+\caption{Rezultati modela dubokog učenja iz rada Sulaiman i saradnika (u \%)}
+\label{tab:sulaiman-rezultati}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{@{}Y c c c@{}}
+\toprule
+\textbf{Model -- uravnotežavanje} & \textbf{Acc.} & \textbf{Stopa detekcije} & \textbf{AUC} \\
+\midrule
+AE -- bez uravnotežavanja & 95,0 & 90,0 & 92,7 \\
+AE -- SMOTE & 96,1 & 89,7 & 92,9 \\
+CNN -- bez uravnotežavanja & 99,7 & 83,0 & 91,4 \\
+CNN -- SMOTE & 99,8 & 89,7 & 94,7 \\
+LSTM -- bez uravnotežavanja & 99,9 & 80,8 & 90,4 \\
+LSTM -- RUS & 98,4 & 88,9 & 93,6 \\
+\textbf{LSTM -- SMOTE} & \textbf{99,2} & \textbf{93,3} & \textbf{96,3} \\
+LSTM -- ADASYN & 99,2 & 92,6 & 95,9 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Tumačenje rezultata.}
+Uravnotežavanje skupa za treniranje značajno povećava stopu detekcije:
+kod LSTM mreže ona raste s 80,8\,\% (bez uravnotežavanja) na 93,3\,\%
+uz SMOTE, uz mali pad tačnosti (s 99,9\,\% na 99,2\,\%). Metode koje
+generišu sintetičke primjere (SMOTE, ADASYN) bile su uspješnije od
+RUS-a, koji odbacuje dio podataka većinske klase. Autori LSTM i CNN
+modelima pripisuju prednost jer mogu naučiti sekvencijalne obrasce
+transakcija. Rad ne prikazuje preciznost, pa nije moguće procijeniti
+broj lažnih alarma koji prati visoku stopu detekcije.
+
+\textbf{Zaključak i značaj za istraživanje.}
+Rad pokazuje da podešavanje hiperparametara i oversampling skupa
+za treniranje mogu značajno povećati osjetljivost modela, što je
+direktno povezano sa zadacima 2.2 našeg projekta (\emph{tuning} i
+uravnotežavanje klasa). Istovremeno, potvrđuje važnost prikaza
+preciznosti uz recall: bez preciznosti visoka stopa detekcije ne
+govori koliko je model upotrebljiv u praksi.

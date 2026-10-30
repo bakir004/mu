@@ -1,15 +1,128 @@
+
 \Needspace{12\baselineskip}
-\paragraph{Naučnoistraživački rad -- \ClanDva}
-\textbf{Naslov i autori:} \dopuni{tačan naslov, autori, godina, izvor i citat u literaturi.}
-\begin{table}[H]\centering
-\caption{Pregled naučnoistraživačkog rada člana \ClanDva}
+\subsubsection*{Naučnoistraživački rad -- \ClanDva}
+
+\textbf{Naslov rada:}
+\emph{Applying supervised machine learning algorithms and ensemble
+models to enhance credit card fraud detection}.\\
+
+\textbf{Autori:}
+Abrar Al-Bulushi, Abdul K. Shaikh i Naresh Adhikari.\\
+
+\textbf{Izvor:}
+\emph{Frontiers in Artificial Intelligence}, vol. 9, članak 1813728,
+2026. \cite{albulushi2026fraud}
+
+\begin{table}[H]
+\centering
+\caption{Sažeti pregled naučnoistraživačkog rada Al-Bulushi i saradnika (2026)}
+\label{tab:albulushi-pregled}
 \small
-\begin{tabularx}{\linewidth}{@{}p{.25\linewidth}Y@{}}\toprule
-Stavka & Sažetak iz rada \\ \midrule
-Problem & \dopuni{koji problem se rješava} \\
-Skup podataka & \dopuni{naziv, veličina i izvor ako su navedeni} \\
-Korištene metode & \dopuni{koji algoritmi su upoređivani} \\
-Metrike & \dopuni{npr. precision, recall, F1, AUC, tačnost} \\
-Najbolji rezultat & \dopuni{broj, metrika i metoda koja ga je ostvarila} \\
-\bottomrule\end{tabularx}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{@{}p{0.25\linewidth}Y@{}}
+\toprule
+\textbf{Stavka} & \textbf{Opis} \\
+\midrule
+
+Problem &
+Detekcija prevarnih transakcija kreditnim karticama kao binarna
+klasifikacija na izrazito nebalansiranim podacima, uz provjeru
+generalizacije modela na neviđenim skupovima podataka. \\
+
+Skup podataka &
+Glavni skup za treniranje i testiranje je \emph{isti Sparkov skup}
+koji koristi naš tim (približno 1,3 miliona transakcija, 0,5\,\% prevara,
+22 atributa). Skup od 555\,719 transakcija iz iste kolekcije i još četiri
+javna skupa (među njima evropski skup od 284\,807 transakcija i PaySim)
+služe kao neviđeni skupovi. \\
+
+Korištene metode &
+Logistička regresija, Naive Bayes, stablo odlučivanja, Random Forest,
+neuronska mreža (ANN) i XGBoost; uravnotežavanje metodama RUS, ROS
+i SMOTE; selekcija atributa (korelacija, ANOVA, RFE, unaprijedna
+selekcija); novi atributi ponašanja korisnika; pomjeranje praga
+odlučivanja; ansambli \emph{bagging}, \emph{boosting} i \emph{stacking}. \\
+
+Metrike &
+Tačnost, preciznost, osjetljivost (recall), F1-mjera i AUC,
+uz konfuzijsku matricu; 4-struka unakrsna validacija. \\
+
+Najbolji rezultat &
+Pojedinačno: \textbf{XGBoost} bez uravnotežavanja, F1 \textbf{0,84}
+(AUC 0,99). Konačni model \textbf{Bagging~1} (10 modela):
+F1 \textbf{0,795}, recall 0,864, AUC 0,99; uz nove atribute ponašanja
+F1 raste na \textbf{0,83} (recall 0,89). \\
+
+\bottomrule
+\end{tabularx}
 \end{table}
+
+\textbf{Cilj i istraživački problem.}
+Autori razvijaju cjelovit okvir za detekciju prevara koji objedinjuje
+izbor algoritma, uravnotežavanje klasa, selekciju i konstrukciju atributa
+te ansambl modele. Posebno ih zanima da li model treniran na jednom
+skupu zadržava performanse na drugim, neviđenim skupovima podataka.
+
+\textbf{Skup podataka i priprema.}
+Rad je za nas posebno relevantan jer kao glavni skup koristi upravo
+Sparkov podatke sa Kaggle platforme, sa 12 kategoričkih i 11 numeričkih
+atributa i bez nedostajućih vrijednosti. Podaci su standardizovani
+(\emph{z-score}), a podjela je urađena 4-strukom unakrsnom validacijom
+(75\,\% podataka za treniranje). Autori su konstruisali i nove atribute
+ponašanja: oznaku da li je transakcija izvan uobičajenog vremenskog prozora
+korisnika (izvan 10.--90.~percentila sati transakcija) i \emph{anomaly score}
+dobijen metodom Isolation Forest.
+
+\textbf{Poređenje eksperimentalnih rezultata.}
+Tabela~\ref{tab:albulushi-rezultati} prikazuje izdvojene rezultate iz
+Tabela 1, 8 i 9 rada (pojedinačni modeli, pomjeranje praga i ansambli).
+
+\begin{table}[H]
+\centering
+\caption{Izdvojeni rezultati iz rada Al-Bulushi i saradnika (Sparkov skup)}
+\label{tab:albulushi-rezultati}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{@{}Y c c c c c@{}}
+\toprule
+\textbf{Model} & \textbf{Acc.} & \textbf{F1} & \textbf{Prec.} & \textbf{Recall} & \textbf{AUC} \\
+\midrule
+Logistička regresija -- RUS & 0,87 & 0,06 & 0,03 & 0,76 & 0,96 \\
+Naive Bayes -- bez uravnoteženja & 0,90 & 0,07 & 0,04 & 0,68 & 0,82 \\
+Stablo odlučivanja -- ROS & 0,99 & 0,78 & 0,79 & 0,77 & 0,88 \\
+Random Forest -- bez uravnoteženja & 0,99 & 0,82 & 0,88 & 0,76 & 0,97 \\
+Random Forest -- RUS & 0,97 & 0,30 & 0,17 & 0,97 & 0,99 \\
+ANN -- bez uravnoteženja & 0,99 & 0,83 & 0,93 & 0,76 & 0,99 \\
+\textbf{XGBoost -- bez uravnoteženja} & \textbf{0,99} & \textbf{0,84} & \textbf{0,91} & \textbf{0,79} & \textbf{0,99} \\
+XGBoost -- SMOTE, prag 0,7 & 0,99 & 0,70 & 0,67 & 0,85 & 0,99 \\
+\midrule
+Bagging~1 (10 modela) & 0,99 & 0,79 & 0,73 & 0,86 & 0,99 \\
+Stacking~1 (RF baza, ANN meta) & 0,99 & 0,80 & 0,79 & 0,80 & 0,93 \\
+Boosting~2 (LR + AdaBoost) & 0,99 & 0,00 & 0,00 & 0,00 & 0,82 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Tumačenje rezultata.}
+Logistička regresija i Naive Bayes daju vrlo nisku F1-mjeru (ispod 0,1)
+bez obzira na metodu uravnotežavanja, dok modeli zasnovani na stablima
+(Random Forest, XGBoost) i neuronska mreža postižu F1 oko 0,8.
+Rezultati jasno pokazuju kompromis između preciznosti i osjetljivosti:
+\emph{random undersampling} podiže recall Random Foresta na 0,97, ali
+preciznost pada na 0,17, jer model treniran na uravnoteženim podacima
+na realističnoj raspodjeli generiše mnogo lažnih alarma. Tačnost je
+za gotovo sve modele 0,99 i zato nije informativna. Ansambl Bagging~1
+nije postigao najveći F1, ali su ga autori izabrali kao konačni model zbog
+stabilnosti i visokog recall-a, a na neviđenom Sparkov skupu postiže
+F1 0,61, odnosno 0,66 uz nove atribute ponašanja.
+
+\textbf{Zaključak i značaj za istraživanje.}
+Rad potvrđuje da su na našem skupu podataka metode zasnovane na
+stablima i \emph{boosting} najperspektivnije, a da su linearni modeli i
+Naive Bayes slabi. Za naš projekat su posebno korisna tri zapažanja:
+(1) uravnotežavanje treba primjenjivati samo na skupu za treniranje i
+pratiti njegov uticaj na preciznost, (2) pomjeranje praga odlučivanja je
+jednostavan način da se podesi odnos preciznosti i osjetljivosti, i
+(3) atributi izvedeni iz vremena transakcije i ponašanja korisnika
+mogu dodatno poboljšati detekciju.

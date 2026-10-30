@@ -1,15 +1,119 @@
+
 \Needspace{12\baselineskip}
-\paragraph{Naučnoistraživački rad -- \ClanTri}
-\textbf{Naslov i autori:} \dopuni{tačan naslov, autori, godina, izvor i citat u literaturi.}
-\begin{table}[H]\centering
-\caption{Pregled naučnoistraživačkog rada člana \ClanTri}
+\subsubsection*{Naučnoistraživački rad -- \ClanTri}
+
+\textbf{Naslov rada:}
+\emph{Enhancing credit card fraud detection: highly imbalanced data case}.\\
+
+\textbf{Autori:}
+Dalia Breskuvienė i Gintautas Dzemyda.\\
+
+\textbf{Izvor:}
+\emph{Journal of Big Data}, vol. 11, članak 182,
+2024. \cite{breskuviene2024fraud}
+
+\begin{table}[H]
+\centering
+\caption{Sažeti pregled naučnoistraživačkog rada Breskuvienė i Dzemyde (2024)}
+\label{tab:breskuviene-pregled}
 \small
-\begin{tabularx}{\linewidth}{@{}p{.25\linewidth}Y@{}}\toprule
-Stavka & Sažetak iz rada \\ \midrule
-Problem & \dopuni{koji problem se rješava} \\
-Skup podataka & \dopuni{naziv, veličina i izvor ako su navedeni} \\
-Korištene metode & \dopuni{koji algoritmi su upoređivani} \\
-Metrike & \dopuni{npr. precision, recall, F1, AUC, tačnost} \\
-Najbolji rezultat & \dopuni{broj, metrika i metoda koja ga je ostvarila} \\
-\bottomrule\end{tabularx}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{@{}p{0.25\linewidth}Y@{}}
+\toprule
+\textbf{Stavka} & \textbf{Opis} \\
+\midrule
+
+Problem &
+Selekcija atributa za detekciju prevara kreditnim karticama kada su
+podaci izrazito nebalansirani; uobičajene metode selekcije atributa
+zanemaruju manjinsku klasu. \\
+
+Skup podataka &
+Tri skupa: sintetički skup transakcija (3\,445\,553 instanci,
+0,14\,\% prevara), \emph{Sparkov} skup -- spojene datoteke
+\texttt{fraudTrain} i \texttt{fraudTest} (1\,852\,394 instanci,
+0,52\,\% prevara) i stvarni evropski skup (284\,807 instanci,
+0,17\,\% prevara). \\
+
+Korištene metode &
+Nova metoda selekcije atributa FID-SOM zasnovana na samoorganizujućim
+mapama (SOM), upoređena s univarijatnom selekcijom (F-test, $\chi^2$,
+uzajamna informacija), RFE i važnošću atributa iz XGBoosta.
+Klasifikatori: Random Forest, XGBoost i CatBoost. \\
+
+Metrike &
+F1-mjera, MCC, G-Mean, AUC-PR i AUC-ROC; svaki rezultat je prosjek
+pet ponavljanja s različitim \emph{random seed} vrijednostima. \\
+
+Najbolji rezultat &
+Na Sparkov skupu: \textbf{XGBoost + FID-SOM} (7 atributa),
+F1 \textbf{0,855}, AUC-PR 0,895, AUC-ROC 0,998, MCC 0,857
+(bez selekcije atributa F1 je 0,543). \\
+
+\bottomrule
+\end{tabularx}
 \end{table}
+
+\textbf{Cilj i istraživački problem.}
+Autori polaze od toga da su podaci o prevarama nebalansirani, visoko
+dimenzionalni (posebno nakon kodiranja kategoričkih atributa) i podložni
+promjeni obrazaca kroz vrijeme (\emph{concept drift}). Cilj rada je
+pokazati da pažljivo odabran, manji skup atributa poboljšava klasifikaciju
+više nego dodatni atributi.
+
+\textbf{Skup podataka i priprema.}
+Za nas je posebno važno što je drugi skup u radu isti Sparkov skup,
+pri čemu su autori spojili datoteke za treniranje i testiranje i koristili
+11 atributa. Umjesto nasumične podjele, podaci su podijeljeni
+\emph{hronološki}: najranijih 80\,\% transakcija čini skup za treniranje, a
+kasnijih 20\,\% skup za testiranje. Autori naglašavaju da nasumična
+podjela vremenski zavisnih podataka daje previše optimistične rezultate.
+Kategorički atributi su kodirani \emph{James-Stein} enkoderom, a numerički
+normalizovani na raspon [0, 1]. Namjerno nije korišteno uravnotežavanje
+klasa ni podešavanje hiperparametara, kako bi se izolovao čist efekat
+selekcije atributa.
+
+\textbf{Poređenje eksperimentalnih rezultata.}
+Tabela~\ref{tab:breskuviene-rezultati} prikazuje rezultate iz Tabele 6 rada
+za Sparkov skup, i to za model bez selekcije atributa (\emph{baseline})
+i za predloženu metodu FID-SOM.
+
+\begin{table}[H]
+\centering
+\caption{Rezultati na Sparkov skupu iz rada Breskuvienė i Dzemyde}
+\label{tab:breskuviene-rezultati}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{@{}Y c c c c c@{}}
+\toprule
+\textbf{Model} & \textbf{F1} & \textbf{AUC-ROC} & \textbf{AUC-PR} & \textbf{MCC} & \textbf{G-Mean} \\
+\midrule
+CatBoost -- svi atributi & 0,750 & 0,991 & 0,769 & 0,765 & 0,791 \\
+CatBoost -- FID-SOM & 0,828 & 0,997 & 0,866 & 0,831 & 0,870 \\
+Random Forest -- svi atributi & 0,622 & 0,967 & 0,767 & 0,660 & 0,682 \\
+Random Forest -- FID-SOM & 0,835 & 0,978 & 0,868 & 0,839 & 0,866 \\
+XGBoost -- svi atributi & 0,543 & 0,973 & 0,641 & 0,593 & 0,622 \\
+\textbf{XGBoost -- FID-SOM} & \textbf{0,855} & \textbf{0,998} & \textbf{0,895} & \textbf{0,857} & \textbf{0,889} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Tumačenje rezultata.}
+Na Sparkov skupu selekcija atributa ima veoma veliki efekat: F1-mjera
+XGBoosta raste s 0,543 na 0,855, a Random Foresta s 0,622 na 0,835.
+Istovremeno, AUC-ROC je visok (0,97--0,998) i za modele bez selekcije,
+što pokazuje da AUC-ROC na izrazito nebalansiranim podacima slabo
+razlikuje dobre i lošije modele. Zato autori stavljaju naglasak na
+AUC-PR, MCC i F1-mjeru. Na stvarnom evropskom skupu, čiji su atributi
+već dobijeni PCA transformacijom, efekat selekcije je mnogo manji
+(F1 0,796 naspram 0,801 za XGBoost). Ukupno je FID-SOM bio najbolja
+metoda u 32 od 45 poređenja (71\,\%).
+
+\textbf{Zaključak i značaj za istraživanje.}
+Rad pokazuje da su na našem skupu ansambli stabala (XGBoost, CatBoost,
+Random Forest) uspješni, ali da njihove performanse snažno zavise od
+izbora atributa. To za naš projekat znači da treba ukloniti identifikatore
+i nebitne atribute, a kao metrike koristiti F1, AUC-PR i MCC, a ne
+samo tačnost i AUC-ROC. Rad upozorava i da nasumična podjela podataka
+može precijeniti performanse, pa je hronološka podjela vrijedna razmatranja.

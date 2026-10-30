@@ -1,7 +1,10 @@
 \subsection{Pregled naučnoistraživačkih radova}\label{sec:radovi}
 Svaki od pet članova analizira najmanje jedan relevantan naučnoistraživački rad.
 Za svaki rad navode se \textbf{problem, skup podataka, metode, metrike i najbolji rezultat}.
-Bibliografski podaci i brojčani rezultati unose se tek nakon čitanja izvornog rada.
+Tri rada (\cite{afriyie2023fraud,albulushi2026fraud,breskuviene2024fraud}) koriste isti
+Sparkov skup podataka kao naš projekat, a dva (\cite{ileberi2022fraud,sulaiman2024fraud})
+najčešće korišteni stvarni evropski skup transakcija, što omogućava poređenje nalaza na
+simuliranim i stvarnim podacima.
 
 \input{literatura/rad_01}
 \input{literatura/rad_02}
@@ -9,13 +12,95 @@ Bibliografski podaci i brojčani rezultati unose se tek nakon čitanja izvornog 
 \input{literatura/rad_04}
 \input{literatura/rad_05}
 
+\subsubsection*{Zbirni pregled radova}
+\begin{table}[H]
+\centering
+\caption{Zbirni pregled analiziranih naučnoistraživačkih radova}
+\label{tab:radovi-zbirno}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.15\linewidth}>{\raggedright\arraybackslash}p{.14\linewidth}Y>{\raggedright\arraybackslash}p{.16\linewidth}>{\raggedright\arraybackslash}p{.22\linewidth}@{}}
+\toprule
+\textbf{Rad} & \textbf{Skup podataka} & \textbf{Metode} & \textbf{Metrike} & \textbf{Najbolji rezultat} \\
+\midrule
+Afriyie i sar.\ (2023) \cite{afriyie2023fraud} &
+Sparkov &
+LR, DT, RF; RUS &
+Acc, Prec, Rec, F1, Spec, AUC &
+RF: AUC 0,989, recall 0,97, F1 0,17 \\
+Al-Bulushi i sar.\ (2026) \cite{albulushi2026fraud} &
+Sparkov + 5 neviđenih skupova &
+LR, NB, DT, RF, ANN, XGBoost; RUS, ROS, SMOTE; ansambli &
+Acc, Prec, Rec, F1, AUC &
+XGBoost: F1 0,84; Bagging~1: F1 0,795, recall 0,864 \\
+Breskuvienė i Dzemyda (2024) \cite{breskuviene2024fraud} &
+Sparkov, sintetički i evropski skup &
+RF, XGBoost, CatBoost; selekcija atributa FID-SOM &
+F1, MCC, G-Mean, AUC-PR, AUC-ROC &
+XGBoost + FID-SOM (Sparkov): F1 0,855, AUC-PR 0,895 \\
+Ileberi i sar.\ (2022) \cite{ileberi2022fraud} &
+Evropski skup &
+DT, RF, LR, ANN, NB; GA selekcija atributa; SMOTE &
+Acc, Prec, Rec, F1, AUC &
+GA-RF: Acc 99,98\,\%, F1 82,41\,\% \\
+Sulaiman i sar.\ (2024) \cite{sulaiman2024fraud} &
+Evropski skup &
+AE, CNN, LSTM; tuning hiperparametara; RUS, SMOTE, ADASYN &
+Acc, stopa detekcije, AUC &
+LSTM + SMOTE: stopa detekcije 93,3\,\%, AUC 96,3\,\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 \subsubsection*{Očekivanja na osnovu literature}
-\dopuni{Uporediti nalaze pet radova. Navesti koji algoritmi su se pokazali uspješnim,
-koje se metrike najčešće koriste i zašto. Potkrijepiti tvrdnje citatima radova.}
+\textbf{Algoritmi.} U svim radovima koji ih porede najbolje rezultate daju ansambli
+zasnovani na stablima odlučivanja. Random Forest je najbolji model kod Afriyie i
+saradnika \cite{afriyie2023fraud} i Ileberija i saradnika \cite{ileberi2022fraud},
+a XGBoost i Random Forest kod Al-Bulushi i saradnika \cite{albulushi2026fraud} i
+Breskuvienė i Dzemyde \cite{breskuviene2024fraud}. Ovi modeli dobro rade s
+mješovitim tipovima atributa, nelinearnim odnosima i atributima različitih skala.
+Neuronske mreže postižu konkurentne rezultate \cite{albulushi2026fraud,sulaiman2024fraud},
+ali zahtijevaju pažljivo podešavanje hiperparametara. Logistička regresija i Naive Bayes
+dosljedno daju najslabije rezultate: na Sparkov skupu F1-mjera im je ispod 0,1
+\cite{albulushi2026fraud}, a Naive Bayes ima preciznost svega 7--16\,\% i na
+evropskom skupu \cite{ileberi2022fraud}. Ove modele zato očekujemo kao donju
+granicu (\emph{baseline}) za poređenje. Kombinovanje modela u ansambl
+(\emph{bagging}, \emph{stacking}) daje stabilne rezultate i visok recall, ali ne
+nadmašuje uvijek najbolji pojedinačni model \cite{albulushi2026fraud}.
+
+\textbf{Uravnotežavanje klasa.} Uravnotežavanje skupa za treniranje (RUS, ROS, SMOTE)
+povećava osjetljivost modela \cite{sulaiman2024fraud,albulushi2026fraud}, ali na
+realističnoj raspodjeli klasa značajno smanjuje preciznost
+\cite{afriyie2023fraud,albulushi2026fraud}. Primjer je Random Forest treniran na
+\emph{undersampling} uzorku: recall 0,97 uz preciznost 0,09--0,17. Za naš projekat
+to znači da modele treniramo i na balansiranom skupu, ali ih provjeravamo i na
+stratifikovanim uzorcima s originalnim udjelom prevara (0,58\,\%), te da
+uravnotežavanje primjenjujemo isključivo na skupu za treniranje.
+
+\textbf{Metrike.} Ukupna tačnost nije pouzdana mjera jer model koji sve transakcije
+proglasi legitimnim postiže tačnost od oko 99,4\,\%. Gotovo svi radovi koriste
+preciznost, osjetljivost (recall) i F1-mjeru za klasu prevare, te AUC-ROC. Breskuvienė
+i Dzemyda \cite{breskuviene2024fraud} pokazuju da je AUC-ROC na nebalansiranim
+podacima visok (0,97--0,998) i za osjetno slabije modele, pa preporučuju AUC-PR i MCC.
+Kao glavne metrike projekta zato koristimo \textbf{F1-mjeru, preciznost i recall za
+klasu prevare, AUC-PR i MCC}, a dodatno tačnost, specifičnost, kappa statistiku
+i AUC-ROC, u skladu sa specifikacijom zadatka 2.2.
+
+\textbf{Atributi.} Na Sparkov skupu uočeni su obrasci prevara povezani s iznosom
+transakcije, dobom dana i kategorijom kupovine \cite{afriyie2023fraud}, dok
+selekcija atributa i atributi izvedeni iz ponašanja korisnika dodatno poboljšavaju
+rezultate \cite{breskuviene2024fraud,albulushi2026fraud}. Očekujemo da će izvedeni
+atributi (sat transakcije, starost korisnika, udaljenost korisnika od trgovca) biti
+korisniji od identifikatora i ličnih podataka, koje treba ukloniti.
 
 \subsubsection*{Istraživačka hipoteza}
-\textbf{Radna hipoteza:} \emph{Primjena postupaka za uravnotežavanje klasa i
-podešavanje hiperparametara može poboljšati prepoznavanje prevarnih transakcija,
-a kombinovanje različitih klasifikatora može ostvariti bolju F1 mjeru za klasu
-prevare od pojedinačnih modela.} Hipotezu precizirati na osnovu
-pregledanih radova i provjeriti eksperimentalnim rezultatima.
+\textbf{Radna hipoteza:} \emph{Na korištenom Sparkov skupu podataka modeli zasnovani na
+ansamblima stabala odlučivanja (Random Forest, gradient boosting) postići će veću F1-mjeru
+i AUC-PR za klasu prevare od linearnih i probabilističkih modela (logistička regresija,
+Naive Bayes). Uravnotežavanje skupa za treniranje i podešavanje hiperparametara povećaće
+osjetljivost modela, ali uz pad preciznosti na skupu s realističnim udjelom prevara.
+Ansambl koji kombinuje različite klasifikatore postići će F1-mjeru najmanje jednaku
+najboljem pojedinačnom modelu, uz stabilnije rezultate kroz unakrsnu validaciju.}
+
+Hipoteza će se provjeriti u zadacima 2.2 i 2.3 poređenjem metrika svih modela
+na istom testnom skupu i kroz unakrsnu validaciju.
