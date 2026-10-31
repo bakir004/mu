@@ -1,42 +1,385 @@
 \subsection{Istraživačka analiza podataka}\label{sec:analiza}
-Ovaj odjeljak obuhvata \textbf{svaki atribut iz korištenog skupa podataka}, uključujući
-ciljnu klasu. Za svaki je potrebno prikazati tip, distribuciju i primjeren opis
-(deskriptivnu statistiku ili frekvencije), a zatim \textbf{objasniti zaključak}.
+Analiza obuhvata sva 22 atributa osnovnog skupa
+\texttt{fraud\_balanced.csv}, uključujući ciljnu klasu \texttt{is\_fraud}
+(0 -- legitimna, 1 -- prevarna transakcija). Cilj je opisati raspodjele,
+provjeriti kvalitet podataka i izdvojiti obrasce važne za pripremu i
+modeliranje. Korištene su deskriptivne statistike, frekvencije kategorija,
+vremenske raspodjele te mjere povezanosti između atributa. Detaljni
+postupak i vizualizacije svih varijabli dostupni su u bilježnici.
 
 \subsubsection*{Struktura skupa i kvalitet podataka}
-\dopuni{Navesti dimenzije skupa, tipove varijabli, nedostajuće vrijednosti,
-duplikate i eventualne neuobičajene vrijednosti.}
+Radni skup ima \textbf{15\,012 transakcija i 22 kolone}. Nema nedostajućih
+vrijednosti, praznih tekstova ni dupliranih redova. Svih 15\,012 oznaka
+\texttt{trans\_num} je jedinstveno. Datumi se uspješno parsiraju, iznosi su
+pozitivni, a koordinate u dopuštenim geografskim rasponima. Ponavljanja
+kartica i kupaca predstavljaju različite transakcije.
 
-\subsubsection*{Analiza pojedinačnih varijabli}
+\texttt{cc\_num} i \texttt{zip} posmatrani su kao tekstualne oznake,
+jer njihove aritmetičke sredine nemaju korisno značenje. U 919 redova
+poštanski broj ima četiri cifre, a u 14\,093 pet; čitanje kao tekst
+čuva zatečeni zapis, ali ne vraća eventualno izgubljene vodeće nule.
+
+\begin{table}[htbp]\centering
+\caption{Raspodjela ciljne klase u tri sačuvana skupa}\label{tab:eda_skupovi}
 \small
-\begin{longtable}{@{}p{.19\linewidth}p{.16\linewidth}p{.31\linewidth}p{.25\linewidth}@{}}
-\caption{Pregled svih atributa i zaključaka istraživačke analize}\label{tab:atributi}\\
-\toprule Atribut & Tip & Distribucija / statistika & Zapažanje \\ \midrule
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Skup & Ukupno & Legitimne & Prevare & Udio prevara \\ \midrule
+\texttt{fraud\_balanced.csv} & 15\,012 & 7\,506 & 7\,506 & 50,00\,\% \\
+\texttt{fraud\_15k.csv} & 15\,000 & 14\,913 & 87 & 0,58\,\% \\
+\texttt{fraud\_50k.csv} & 50\,000 & 49\,711 & 289 & 0,58\,\% \\
+\bottomrule\end{tabular}
+\end{table}
+
+Odnos klasa 50/50 posljedica je \emph{undersamplinga}. Udjeli prevara
+iz glavnog skupa zato opisuju balansirani uzorak, a ne stvarnu učestalost
+prevara. Dodatni uzorci od 15 i 50 hiljada redova zadržavaju približno
+0,58\,\% prevara.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{slike/raspodjela_klasa.png}
+\caption{Broj i udio legitimnih i prevarnih transakcija u sva tri CSV uzorka. Samo je osnovni EDA uzorak balansiran.}
+\label{fig:eda_skupovi}
+\end{figure}
+
+\subsubsection*{Analiza svih originalnih atributa}
+Tabela~\ref{tab:eda_atributi} daje pojedinačan pregled svih varijabli. Za
+kategoričke varijable broj različitih vrijednosti i najčešća vrijednost
+predstavljaju sažetak distribucije; potpune frekvencije izračunate su u bilježnici.
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.18\linewidth}>{\raggedright\arraybackslash}p{.13\linewidth}>{\raggedright\arraybackslash}p{.30\linewidth}>{\raggedright\arraybackslash}p{.32\linewidth}@{}}
+\caption{Pojedinačna analiza svih 22 atributa}\label{tab:eda_atributi}\\
+\toprule Atribut & Tip po značenju & Distribucija / statistika & Zapažanje i tumačenje \\ \midrule
 \endfirsthead
-\toprule Atribut & Tip & Distribucija / statistika & Zapažanje \\ \midrule
+\toprule Atribut & Tip po značenju & Distribucija / statistika & Zapažanje i tumačenje \\ \midrule
 \endhead
-\texttt{is\_fraud} & Binarni & \dopuni{broj i udio klasa} & \dopuni{nebalansiranost} \\
-\dopuni{atribut 2} & \dopuni{tip} & \dopuni{mjere ili kategorije} & \dopuni{zaključak} \\
-\dopuni{atribut 3} & \dopuni{tip} & \dopuni{mjere ili kategorije} & \dopuni{zaključak} \\
-\multicolumn{4}{@{}l}{\emph{Dodati po jedan red za svaki preostali atribut iz stvarnog skupa.}} \\
 \bottomrule
+\endfoot
+\texttt{trans\_date\_}\newline\texttt{trans\_time}
+  & Datum i vrijeme
+  & 15\,006 različitih vremena; od 1.~1.~2019. do 21.~6.~2020.; 10\,562 reda iz 2019. i 4\,450 iz 2020.
+  & Periodi nisu jednako dugi; sirovi mjesečni brojevi nisu direktno uporedivi. Sat i kalendarske komponente analiziraju se odvojeno. \\
+\texttt{cc\_num}
+  & Identifi\-kator
+  & 977 kartica; najviše 38 transakcija jedne kartice (0,25\,\%).
+  & Ponavljanje je očekivano. Vrijednost nije numerička mjera; veze iste kartice važne su pri kasnijoj podjeli podataka. \\
+\texttt{merchant}
+  & Kategorički
+  & 693 trgovca; najčešći \texttt{fraud\_Kilback LLC}: 72 transakcije (0,48\,\%).
+  & Veliki broj kategorija i rijetki trgovci. Svi nazivi imaju prefiks \texttt{fraud\_}, pa prefiks ne razdvaja klase. \\
+\texttt{category}
+  & Kategorički
+  & 14 kategorija; \texttt{grocery\_pos}: 2\,494 (16,61\,\%).
+  & Raspodjela se razlikuje između klasa. Kategorije online i fizičke kupovine nisu podjednako zastupljene. \\
+\texttt{amt}
+  & Numerički, USD
+  & Medijan 89,54; sredina 299,52; raspon 1,00--6\,337,25.
+  & Distribucija je asimetrična udesno; veliki iznosi su češći kod prevara, ali iznos sam ne razdvaja sve transakcije. \\
+\texttt{first}
+  & Tekst / kategorija
+  & 352 imena; Christopher: 330 redova (2,20\,\%).
+  & Ime se ponavlja kod različitih osoba; nije jedinstven identifikator niti opravdano objašnjenje prevare. \\
+\texttt{last}
+  & Tekst / kategorija
+  & 480 prezimena; Smith: 301 red (2,01\,\%).
+  & Frekvencije odražavaju sastav simuliranog uzorka i ponovljene kupce. Izbjegavati učenje identiteta umjesto ponašanja. \\
+\texttt{gender}
+  & Binarna kategorija
+  & F: 7\,835 (52,19\,\%); M: 7\,177 (47,81\,\%).
+  & Opisuje spol vlasnika kartice; sama ukupna frekvencija ne pokazuje koliko atribut pomaže razlikovanju klasa. \\
+\texttt{street}
+  & Tekst / adresa
+  & 977 adresa; najčešća adresa javlja se 38 puta (0,25\,\%).
+  & Adrese se ponavljaju kroz transakcije istog korisnika. Veliki broj različitih adresa i veza s identitetom zahtijevaju oprez. \\
+\texttt{city}
+  & Kategorički
+  & 889 naziva; Warren: 57 redova (0,38\,\%).
+  & Mnogo rijetkih gradova; isti naziv grada ne mora označavati istu lokaciju bez savezne države. \\
+\texttt{state}
+  & Kategorički
+  & 51 oznaka; TX: 1\,024 reda (6,82\,\%).
+  & Geografska zastupljenost nije jednaka. Udjeli u malim grupama nisu stabilni pokazatelji rizika. \\
+\texttt{zip}
+  & Poštanski kod
+  & 964 koda; najčešći \texttt{82514}: 45 redova (0,30\,\%).
+  & Kategoričko značenje i neujednačena dužina zapisa. Razlika između dva koda nije geografska udaljenost. \\
+\texttt{lat}
+  & Numerički, stepeni
+  & 962 vrijednosti; sredina 38,62; raspon 20,03--66,69.
+  & Koordinata korisnika; velika sličnost s geografskom širinom trgovca, slaba pojedinačna veza s klasom. \\
+\texttt{long}
+  & Numerički, stepeni
+  & 963 vrijednosti; sredina $-90,28$; raspon $-165,67$ do $-67,95$.
+  & Zapadne dužine su negativne. Krajnje lokacije nisu automatski greške niti razlog za brisanje. \\
+\texttt{city\_pop}
+  & Numerički, broj
+  & 875 vrijednosti; medijan 2\,526; sredina 90\,510,75; najviše 2\,906\,700.
+  & Vrlo izražen desni rep; većina transakcija vezana je za manje gradove, uz nekoliko velikih populacija. \\
+\texttt{job}
+  & Kategorički
+  & 493 zanimanja; Materials engineer: 114 redova (0,76\,\%).
+  & Mnoge rijetke kategorije i ponovljeni korisnici; opažena povezanost ne dokazuje uzrok prevare. \\
+\texttt{dob}
+  & Datum rođenja
+  & 962 datuma; od 30.~10.~1924. do 29.~1.~2005.
+  & Starost se računa u trenutku transakcije. Ponavljanja odražavaju iste korisnike ili isti datum rođenja. \\
+\texttt{trans\_num}
+  & Identifi\-kator
+  & 15\,012 različitih vrijednosti; svaka se pojavljuje jednom.
+  & Potvrđuje jedinstvenost transakcija i služi provjeri preklapanja skupova; nema smisla računati numeričku statistiku oznake. \\
+\texttt{unix\_time}
+  & Numerički zapis vremena
+  & 15\,006 vrijednosti; pretvaranje standardnim Unix sekundama daje 2012--2013.
+  & Ne slaže se s tekstualnim datumom: dodavanje sedam kalendarskih godina usklađuje svih 15\,012 redova. \\
+\texttt{merch\_lat}
+  & Numerički, stepeni
+  & 15\,005 vrijednosti; sredina 38,61; raspon 19,04--67,51.
+  & Geografska širina trgovca varira između transakcija; gotovo je linearno povezana s \texttt{lat}. \\
+\texttt{merch\_long}
+  & Numerički, stepeni
+  & 15\,010 vrijednosti; sredina $-90,28$; raspon $-166,55$ do $-67,03$.
+  & Gotovo je linearno povezana s \texttt{long}; analizirana je i udaljenost između dvije lokacije. \\
+\texttt{is\_fraud}
+  & Binarna ciljna klasa
+  & 0: 7\,506 legitimnih; 1: 7\,506 prevarnih transakcija.
+  & Odnos 50/50 je namjerno formiran. Atribut je cilj predviđanja i ne smije postati ulaz modela. \\
 \end{longtable}
-\normalsize
+\endgroup
 
-Za \textbf{numeričke} varijable analizirati, gdje je primjereno, srednju vrijednost,
-medijan, standardnu devijaciju, raspone, kvartile i izdvojene vrijednosti.
-Za \textbf{kategoričke} varijable prikazati broj kategorija i njihove učestalosti.
-Odgovarajuće grafikone navesti uz tekst i za svaki obrazložiti uočeni obrazac.
+\subsubsection*{Numeričke distribucije i izdvojene vrijednosti}
+Tabela~\ref{tab:eda_numericke} prikazuje osnovne statistike mjerenih
+numeričkih veličina: sredinu, uzoračku standardnu devijaciju $s$, minimum,
+kvartile i maksimum. Identifikatori i poštanski kodovi izostavljeni su
+iz numeričke statistike. \texttt{unix\_time} izostavljen je iz ove tabele
+i numeričkih histograma jer se njegovo neslaganje s datumom provjerava
+u dijelu o vremenu. Izvorne vrijednosti nisu zaokružene; samo su prikazi
+statistika zaokruženi na dvije decimale.
 
-\slika{slike/raspodjela_klasa.png}{Distribucija legitimnih i prevarnih transakcija.}{fig:klase}
+\begin{table}[htbp]\centering
+\caption{Deskriptivna statistika numeričkih atributa, zaokružena na dvije decimale}
+\label{tab:eda_numericke}
+\begingroup\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrrr@{}}\toprule
+Atribut & Sredina & $s$ & Min. & $Q_1$ & Medijan & $Q_3$ & Maks. \\ \midrule
+\texttt{amt} & 299,52 & 373,92 & 1,00 & 20,50 & 89,54 & 477,10 & 6\,337,25 \\
+\texttt{lat} & 38,62 & 5,13 & 20,03 & 34,78 & 39,41 & 42,02 & 66,69 \\
+\texttt{long} & -90,28 & 14,08 & -165,67 & -96,98 & -87,41 & -80,13 & -67,95 \\
+\texttt{city\_pop} & 90\,510,75 & 303\,554,43 & 23,00 & 743,00 & 2\,526,00 & 21\,125,00 & 2\,906\,700,00 \\
+\texttt{merch\_lat} & 38,61 & 5,17 & 19,04 & 34,90 & 39,40 & 41,99 & 67,51 \\
+\texttt{merch\_long} & -90,28 & 14,11 & -166,55 & -96,99 & -87,36 & -80,17 & -67,03 \\
+\bottomrule\end{tabular}\endgroup
+\end{table}
+
+\texttt{amt} je asimetričan udesno: sredina 299,52 USD znatno je veća od
+medijana 89,54 USD, uz standardnu devijaciju 373,92 USD i asimetriju 1,48.
+Manji broj velikih iznosa podiže prosjek. Za \texttt{city\_pop} razlika je
+još izraženija: medijan je 2\,526, a sredina 90\,510,75 stanovnika,
+uz asimetriju 5,62.
+
+Pravilo $[Q_1-1{,}5\,IQR,\;Q_3+1{,}5\,IQR]$, gdje je $IQR=Q_3-Q_1$,
+izdvaja 118 iznosa i 2\,774 vrijednosti populacije. Za \texttt{lat},
+\texttt{long}, \texttt{merch\_lat} i \texttt{merch\_long} izdvaja 66,
+491, 79 i 480 redova. To su statistički izdvojene vrijednosti, a ne
+dokazane greške; u ovoj fazi nijedna nije automatski uklonjena.
+Slika~\ref{fig:eda_numericke} pokazuje oblike raspodjela, uz logaritamsku
+osu za iznos i populaciju radi preglednosti njihovih dugih repova.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth,height=.78\textheight,keepaspectratio]{slike/numericke_distribucije.png}
+\caption{Distribucije šest originalnih numeričkih veličina i izvedene starosti, bez \texttt{unix\_time}. Iznos i populacija prikazani su u originalnim jedinicama na logaritamskoj horizontalnoj osi. Visina stupca označava broj transakcija u intervalu.}
+\label{fig:eda_numericke}
+\end{figure}
+
+Razlika iznosa između klasa prikazana je na slici~\ref{fig:eda_iznos}.
+Legitimne transakcije imaju sredinu 67,72 USD i medijan 47,92 USD,
+a prevare sredinu 531,32 USD i medijan 396,50 USD. Prevare češće imaju
+veće iznose, ali se raspodjele preklapaju. Najveći iznos u skupu,
+6\,337,25 USD, pripada legitimnoj transakciji; najveći iznos prevare je
+1\,376,04 USD. Zato visok iznos sam po sebi ne određuje klasu.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{slike/iznos_po_klasi.png}
+\caption{Poređenje iznosa legitimnih i prevarnih transakcija pomoću empirijske kumulativne distribucije i kutijastog dijagrama. Logaritamska osa omogućava prikaz cijelog raspona.}
+\label{fig:eda_iznos}
+\end{figure}
+
+\subsubsection*{Datumi i vremenski obrasci}
+Transakcije obuhvataju period 1.~1.~2019.--21.~6.~2020. godine.
+Posljednji mjesec je nepotpun, a godišnji periodi različito dugi,
+pa sirovi mjesečni brojevi ne predstavljaju direktno poređenje rizika.
+
+Potvrđena je \textbf{neusklađenost zapisa vremena}: standardno
+pretvaranje \texttt{unix\_time} daje 2012--2013. godinu. Dodavanje sedam
+kalendarskih godina usklađuje svih 15\,012 redova s tekstualnim datumom.
+Uzrok se ne može utvrditi iz dostupnih podataka. Vremenski obrasci i
+starost zato su izvedeni iz \texttt{trans\_date\_trans\_time}, bez
+prepisivanja originalnog zapisa.
+
+Približna starost korisnika u trenutku transakcije, izračunata iz
+\texttt{dob}, iznosi 14--95 godina; sredina je 47,57, standardna devijacija
+18,06 i medijan 46,05 godina. Datumi rođenja nakon transakcije nisu
+pronađeni. Raspodjela je ponderisana brojem transakcija, pa korisnici
+s više kupovina imaju veću težinu.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{slike/datumi.png}
+\caption{Transakcije po mjesecima, godine rođenja, provjera Unix zapisa i starost u trenutku transakcije. Broje se transakcije, a ne jedinstveni korisnici.}
+\label{fig:eda_datumi}
+\end{figure}
+
+U periodu 22:00--03:59 obavljeno je \textbf{84,76\,\% prevara i
+21,72\,\% legitimnih transakcija} (slika~\ref{fig:eda_vrijeme}).
+Ovi procenti predstavljaju udio noćnih transakcija unutar svake klase,
+a ne udio prevara među svim noćnim kupovinama. Razlike po danu u sedmici
+manje su izražene. Sat je ciklična veličina, što treba uzeti u obzir
+pri kasnijoj pripremi podataka.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{slike/vremenski_obrasci.png}
+\caption{Sat i dan u sedmici prema klasi. Procenti su normalizovani zasebno unutar svake klase, pa se porede raspodjele vremena izvršenja.}
+\label{fig:eda_vrijeme}
+\end{figure}
+
+\subsubsection*{Kategoričke distribucije i razlike između klasa}
+Za kategoričke atribute izračunati su broj različitih vrijednosti,
+frekvencije i udjeli klasa. Tabela~\ref{tab:eda_atributi} sažima
+raspodjele svih atributa, dok su njihovi pojedinačni grafikoni u bilježnici.
+Kartice, adrese, imena i prezimena ponavljaju se kroz transakcije;
+\texttt{trans\_num} je jedinstven. Svi trgovci imaju prefiks
+\texttt{fraud\_}, pa on ne razlikuje legitimne transakcije i prevare.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth,height=.77\textheight,keepaspectratio]{slike/kategoricke_distribucije.png}
+\caption{Najčešće vrijednosti trgovca, kategorije, spola, savezne države, zanimanja i grada. Za svaki atribut prikazano je najviše osam vrijednosti.}
+\label{fig:eda_kategoricke}
+\end{figure}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth,height=.77\textheight,keepaspectratio]{slike/identifikatori.png}
+\caption{Ponavljanje kartica i adresa te najčešći poštanski brojevi, imena i prezimena. Kod kartica i adresa histogram broji koliko oznaka ima broj transakcija u pojedinom intervalu; svaka oznaka transakcije pojavljuje se jednom.}
+\label{fig:eda_identifikatori}
+\end{figure}
+
+Vrsta kupovine pokazuje izražene razlike između klasa
+(slika~\ref{fig:eda_kategorije_klasa}). Grafikon svaku klasu zasebno
+normalizuje na 100\,\%: na primjer, 23,22\,\% svih prevara pripada
+kategoriji kupovine namirnica na prodajnom mjestu, a 22,82\,\%
+online kupovini. Tabela~\ref{tab:eda_kategorije} koristi drugi nazivnik:
+broj prevara dijeli ukupnim brojem transakcija pojedine kategorije.
+
+U balansiranom uzorku najviši udio prevara ima online kupovina
+(74,28\,\%), a najniži kategorija doma (21,24\,\%). Ovi udjeli nisu
+procjene stvarnog rizika jer je uzorak namjerno balansiran.
+
+\begin{table}[htbp]\centering
+\caption{Sastav pojedinačnih kategorija u balansiranom uzorku}
+\label{tab:eda_kategorije}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}Yrrrr@{}}\toprule
+Vrsta kupovine & Ukupno & Legitimne & Prevare & Udio prevara \\ \midrule
+Kupovina — online & 2\,306 & 593 & 1\,713 & 74,28\,\% \\
+Ostalo — online & 1\,275 & 360 & 915 & 71,76\,\% \\
+Namirnice — prodajno mjesto & 2\,494 & 751 & 1\,743 & 69,89\,\% \\
+Kupovina — prodajno mjesto & 1\,468 & 625 & 843 & 57,43\,\% \\
+Gorivo i transport & 1\,393 & 775 & 618 & 44,36\,\% \\
+Namirnice — online & 393 & 259 & 134 & 34,10\,\% \\
+Ostalo — prodajno mjesto & 740 & 490 & 250 & 33,78\,\% \\
+Putovanja & 347 & 231 & 116 & 33,43\,\% \\
+Zabava & 726 & 493 & 233 & 32,09\,\% \\
+Lična njega & 783 & 563 & 220 & 28,10\,\% \\
+Djeca i kućni ljubimci & 881 & 642 & 239 & 27,13\,\% \\
+Hrana i restorani & 658 & 507 & 151 & 22,95\,\% \\
+Zdravlje i rekreacija & 616 & 483 & 133 & 21,59\,\% \\
+Dom & 932 & 734 & 198 & 21,24\,\% \\
+\bottomrule\end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.95\linewidth]{slike/kategorije_po_klasi.png}
+\caption{Svih 14 kategorija prema klasi, izraženo procentom transakcija unutar svake klase. Ovaj prikaz poredi zastupljenost kategorija, a ne stvarnu vjerovatnoću prevare.}
+\label{fig:eda_kategorije_klasa}
+\end{figure}
 
 \subsubsection*{Povezanost atributa}
-\dopuni{Prikazati i protumačiti korelacije među primjerenim parovima varijabli.
-Po potrebi upotrijebiti različite mjere povezanosti za numeričke i kategoričke
-atribute. Izdvojiti najznačajnije odnose sa ciljnom klasom.}
-\slika{slike/korelacije.png}{Povezanost odabranih numeričkih atributa.}{fig:korelacije}
+Pearsonova korelacija korištena je za linearnu, a Spearmanova za
+povezanost rangova. Korelacije numeričkih veličina s ciljem date su u
+tabeli~\ref{tab:eda_korelacije_klasa}, a povezanosti parova na
+slici~\ref{fig:eda_korelacije}. Identifikatori i kodovi nisu tretirani
+kao kontinuirana mjerenja.
 
-\subsubsection*{Zaključci analize}
-\dopuni{Sažeti nalaze koji utiču na odluke o pripremi podataka:
-neravnomjeran odnos klasa, nedostajuće vrijednosti, problematični atributi i slično.}
+\begin{table}[htbp]\centering
+\caption{Povezanost veličina s klasom \texttt{is\_fraud}, zaokružena na dvije decimale}
+\label{tab:eda_korelacije_klasa}
+\small
+\begin{tabular}{@{}lrr@{}}\toprule
+Veličina & Pearson $r$ & Spearman $\rho$ \\ \midrule
+\texttt{amt} & 0,62 & 0,58 \\
+\texttt{lat} & 0,01 & 0,00 \\
+\texttt{long} & 0,03 & 0,04 \\
+\texttt{city\_pop} & 0,02 & 0,01 \\
+\texttt{unix\_time} & -0,03 & -0,03 \\
+\texttt{merch\_lat} & 0,01 & 0,00 \\
+\texttt{merch\_long} & 0,03 & 0,04 \\
+Starost & 0,07 & 0,06 \\
+Sat transakcije & 0,09 & 0,16 \\
+Dan u sedmici & 0,01 & 0,01 \\
+Udaljenost & -0,00 & -0,01 \\
+\bottomrule\end{tabular}
+\end{table}
+
+Najjaču pojedinačnu numeričku vezu s klasom ima \texttt{amt}
+($r=0,62$, $\rho=0,58$), što je saglasno razlikama iznosa po klasama.
+Veza nije dokaz uzročnosti niti mjera tačnosti modela.
+Koordinate korisnika i trgovca nose vrlo slične informacije:
+$r=0,99$ za \texttt{lat}--\texttt{merch\_lat} i $r=1,00$ za
+\texttt{long}--\texttt{merch\_long}. Prikaz 1,00 je posljedica zaokruživanja i ne znači da su koordinate
+identične. Njihova pojedinačna povezanost s klasom je slaba.
+
+Iz četiri koordinate Haversineovom formulom izvedena je udaljenost
+zračnom linijom: sredina 76,38 km, standardna devijacija 28,85 km,
+medijan 78,39 km i raspon 0,74--144,52 km. Sredine klasa su gotovo iste
+(76,49 i 76,27 km), pa sama udaljenost ne razdvaja klase jasno.
+Ni mala linearna korelacija sata ne isključuje prethodno uočeni
+noćni obrazac, jer su 23 i 0 susjedni sati.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{slike/korelacije.png}
+\caption{Pearsonova matrica korelacija originalnih numeričkih veličina, izvedene starosti, vremena, udaljenosti i ciljne klase. Polje na presjeku reda i kolone daje koeficijent tog para. Identifikatori i kategorički kodovi nisu tretirani kao kontinuirane mjere.}
+\label{fig:eda_korelacije}
+\end{figure}
+
+\subsubsection*{Zaključci analize i posljedice za nastavak rada}
+Najizraženije razlike između klasa vezane su za iznos, kategoriju
+kupovine i vrijeme tokom dana. Za pripremu podataka važni su asimetrija
+iznosa i populacije, sličnost koordinata, razlika dva zapisa vremena te
+razlikovanje identifikatora od mjerenih veličina. Kartice, imena i
+adrese ponavljaju se kroz transakcije; pri pripremi treba spriječiti da
+model pamti identitet korisnika umjesto obrazaca ponašanja. Nema praznih vrijednosti
+za popunjavanje. IQR izdvajanje ne opravdava automatsko brisanje redova.
+Priprema slijedi u odjeljku~\ref{sec:priprema}.
+
+
+\begin{table}[htbp]\centering
+\caption{Broj zajedničkih oznaka transakcija između CSV datoteka}
+\label{tab:eda_preklapanje}
+\small
+\begin{tabular}{@{}llr@{}}\toprule
+Prvi skup & Drugi skup & Zajedničkih transakcija \\ \midrule
+\texttt{fraud\_balanced.csv} & \texttt{fraud\_15k.csv} & 7\,593 \\
+\texttt{fraud\_balanced.csv} & \texttt{fraud\_50k.csv} & 7\,795 \\
+\texttt{fraud\_15k.csv} & \texttt{fraud\_50k.csv} & 15\,000 \\
+\bottomrule\end{tabular}
+\end{table}
+
+Tri datoteke \textbf{nisu nezavisni skupovi}: balansirani skup dijeli
+7\,593 transakcije sa skupom 15k i 7\,795 sa skupom 50k, dok se svih
+15\,000 transakcija iz 15k nalazi u 50k. Zato druga dva CSV-a nisu
+nezavisni testovi modela treniranog na cijelom balansiranom skupu.
+Prije modeliranja treba razdvojiti trening, validaciju i test, a
+balansiranje i transformacije koje uče parametre provoditi samo
+unutar trening dijela. Podjela i pipeline još nisu implementirani;
+prikazani rezultati pripadaju istraživačkoj analizi, a ne evaluaciji modela.
 \referencaKod{1.3 Istraživačka analiza podataka}
+\clearpage

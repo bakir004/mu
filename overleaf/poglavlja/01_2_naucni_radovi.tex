@@ -73,16 +73,19 @@ povećava osjetljivost modela \cite{sulaiman2024fraud,albulushi2026fraud}, ali n
 realističnoj raspodjeli klasa značajno smanjuje preciznost
 \cite{afriyie2023fraud,albulushi2026fraud}. Primjer je Random Forest treniran na
 \emph{undersampling} uzorku: recall 0,97 uz preciznost 0,09--0,17. Za naš projekat
-to znači da modele treniramo i na balansiranom skupu, ali ih provjeravamo i na
-stratifikovanim uzorcima s originalnim udjelom prevara (0,58\,\%), te da
-uravnotežavanje primjenjujemo isključivo na skupu za treniranje.
+to znači da prije balansiranja treba iz polaznih podataka izdvojiti odvojene
+trening, validacijske i testne dijelove. Uravnotežavanje se primjenjuje isključivo
+na trening dijelu, a učinak provjerava na izdvojenim podacima s originalnim
+udjelom prevara (oko 0,58\,\%). Postojeći CSV uzorci se preklapaju
+(odjeljak~\ref{sec:analiza}), pa se ne mogu neposredno koristiti kao nezavisni
+trening i testni skupovi.
 
 \textbf{Metrike.} Ukupna tačnost nije pouzdana mjera jer model koji sve transakcije
 proglasi legitimnim postiže tačnost od oko 99,4\,\%. Gotovo svi radovi koriste
 preciznost, osjetljivost (recall) i F1-mjeru za klasu prevare, te AUC-ROC. Breskuvienė
 i Dzemyda \cite{breskuviene2024fraud} pokazuju da je AUC-ROC na nebalansiranim
 podacima visok (0,97--0,998) i za osjetno slabije modele, pa preporučuju AUC-PR i MCC.
-Kao glavne metrike projekta zato koristimo \textbf{F1-mjeru, preciznost i recall za
+Kao glavne metrike projekta zato planiramo koristiti \textbf{F1-mjeru, preciznost i recall za
 klasu prevare, AUC-PR i MCC}, a dodatno tačnost, specifičnost, kappa statistiku
 i AUC-ROC, u skladu sa specifikacijom zadatka 2.2.
 
