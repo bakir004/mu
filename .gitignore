@@ -5,3 +5,16 @@ __pycache__/
 .vscode/
 .overleaf-local/
 /overleaf.sh
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.bbl
+*.blg
