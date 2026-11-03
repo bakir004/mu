@@ -2,5 +2,5 @@
 2. Otvorite konfiguracija.tex: imena su upisana, algoritme naknadno odaberite.
 3. Svaki clan pise svoje dvije datoteke (literatura i modeli).
 4. Zajednicke sekcije popunjavate direktno po tackama specifikacije.
-5. UPUTSTVO_ZA_TIM.md objasnjava kako povezati Colab bez posebnih oznaka.
+5. Kod je u GitHub repozitoriju bakir004/mu; poveznica se mijenja samo u konfiguracija.tex.
 6. main.tex ne mijenjati tokom pisanja.

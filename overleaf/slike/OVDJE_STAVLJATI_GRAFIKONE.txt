@@ -1,4 +1,4 @@
-Ovdje stavite PNG/PDF grafikone koje dobijete iz Google Colaba.
+Ovdje stavite PNG/PDF grafikone koje dobijete iz biljeznice projekat.ipynb.
 
 Očekivani primjeri:
 - raspodjela_klasa.png
