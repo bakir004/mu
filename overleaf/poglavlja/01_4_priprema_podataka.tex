@@ -11,12 +11,12 @@ Podaci su stratifikovanom podjelom razdvojeni na trening (70\%), validacijski
 raspodjela ciljne klase prikazane su u tabeli~\ref{tab:podjela-priprema}.
 
 \begin{table}[H]\centering
-\caption{Podjela podataka prije i poslije balansiranja}\label{tab:podjela-priprema}
+\caption{Podjela podataka i sastav trening skupa nakon balansiranja}\label{tab:podjela-priprema}
 \small
-\begin{tabularx}{\linewidth}{@{}p{.28\linewidth}r r r Y@{}}\toprule
+\begin{tabularx}{\linewidth}{@{}p{.34\linewidth}r r r Y@{}}\toprule
 Skup & Redovi & Legitimne & Prevare & Udio prevara \\ \midrule
-Trening prije balansiranja & 34\,999 & 34\,796 & 203 & 0,580\% \\
-Trening poslije balansiranja & 406 & 203 & 203 & 50,000\% \\
+Trening & 34\,999 & 34\,796 & 203 & 0,580\% \\
+Trening nakon SMOTE 1:20 (samo pri treniranju) & 36\,535 & 34\,796 & 1\,739 & 4,760\% \\
 Validacija & 7\,501 & 7\,458 & 43 & 0,573\% \\
 Test & 7\,500 & 7\,457 & 43 & 0,573\% \\
 \bottomrule
@@ -131,36 +131,182 @@ Kategorija kupovine pokazuje izražene razlike između klasa. \\
 \end{tabularx}
 \end{table}
 
-\textbf{Balansiranje klasa.} Na trening skupu zadržane su sve 203 prevarne
-transakcije, a random undersamplingom je odabrano 203 legitimnih transakcija.
-Balansiranje je izvršeno isključivo nad trening skupom. Validacijski i testni
-skup nisu mijenjani i zadržali su izvorni odnos klasa. Takav postupak povećava
-mogućnost da modeli nauče klasu prevare, ali može dovesti do većeg broja
-lažno pozitivnih predikcija. Zbog toga će se u nastavku posebno pratiti
-preciznost, recall, F1-mjera i AUC-PR, a ne samo tačnost.
-
 \textbf{Kodiranje i skaliranje.} Numerički atributi obrađeni su imputacijom
-medijanom, a kategorički atributi imputacijom najčešće vrijednosti. Kategorije
-\texttt{category} i \texttt{gender} pretvorene su u numerički oblik one-hot
-kodiranjem. Korišten je \texttt{handle\_unknown=ignore}, pa kategorija koja se
-pojavi u validaciji ili testu, a nije bila prisutna u treningu, ne prekida
-obradu.
+medijanom i standardizacijom, a kategorički atributi imputacijom najčešće
+vrijednosti. Kategorije \texttt{category} i \texttt{gender} pretvorene su u
+numerički oblik one-hot kodiranjem. Korišten je \texttt{handle\_unknown=ignore},
+pa kategorija koja se pojavi u validaciji ili testu, a nije bila prisutna u
+treningu, ne prekida obradu. Od 8 ulaznih atributa dobivena su 22 numerička
+atributa nakon kodiranja.
 
-Od 8 ulaznih atributa dobivena su 22 numerička atributa nakon kodiranja.
-Za logističku regresiju i druge modele osjetljive na skalu koristi se pipeline
-sa \texttt{StandardScaler}-om. Za modele zasnovane na stablima koristi se
-pipeline bez skaliranja, jer poređenje vrijednosti po granama stabla ne
-zahtijeva da atributi budu na istoj skali. U oba slučaja parametri imputacije,
-kodiranja i skaliranja uče se samo na balansiranom trening skupu, a zatim se
-isti transformatori primjenjuju na validaciju i test.
+Koristi se jedna, skalirana varijanta transformacije za sve modele. Skaliranje
+ne mijenja podjele u stablima odlučivanja, ali je potrebno modelima osjetljivim
+na skalu (npr. logistička regresija) i metodama balansiranja koje traže
+najbliže susjede (SMOTE i njegove varijante). Parametri imputacije, kodiranja i
+skaliranja uče se samo na trening skupu, a u unakrsnoj validaciji samo na
+trening dijelu svakog folda.
+
+\textbf{Izbor metode balansiranja klasa.} U trening skupu prevare čine samo
+0,58\,\% transakcija. Prva verzija pripreme koristila je samo random
+undersampling do odnosa 1:1, čime je trening skup sveden na 406 transakcija.
+Umjesto da se metoda odabere unaprijed, upoređeno je deset pristupa iz tri
+grupe: učenje s težinama klasa, undersampling i oversampling, uključujući
+metode koje dodaju sintetičke primjere (tabela~\ref{tab:metode-balansiranja}).
+
+\begin{table}[H]\centering
+\caption{Upoređene metode balansiranja klasa}\label{tab:metode-balansiranja}
+\small
+\begin{tabularx}{\linewidth}{@{}p{.22\linewidth}p{.2\linewidth}Y@{}}\toprule
+Metoda & Vrsta & Kako radi \\ \midrule
+Bez balansiranja & -- & Polazna tačka za poređenje. \\
+Težine klasa & učenje s težinama & Greška na prevari se jače kažnjava; podaci se ne mijenjaju. \\
+RUS & undersampling & Nasumično uklanja legitimne transakcije. \\
+ROS & oversampling & Nasumično ponavlja postojeće prevare. \\
+SMOTE & sintetički oversampling & Pravi nove prevare interpolacijom između susjednih prevara. \\
+SMOTENC & sintetički oversampling & Varijanta SMOTE-a za mješovite podatke; kategoriju novog primjera uzima od susjeda. \\
+Borderline-SMOTE & sintetički oversampling & Generiše primjere samo uz granicu između klasa. \\
+ADASYN & sintetički oversampling & Više primjera generiše tamo gdje je prevare teže naučiti. \\
+SMOTE + Tomek & hibridna metoda & Nakon SMOTE-a uklanja Tomek parove na granici klasa. \\
+SMOTE + ENN & hibridna metoda & Nakon SMOTE-a uklanja primjere koje susjedi pogrešno klasifikuju. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Balansiranje je ugrađeno kao korak \texttt{imblearn} pipelinea, pa se
+primjenjuje samo na trening dio svakog folda, dok fold za procjenu zadržava
+izvorni odnos klasa. Korištena je ponovljena stratifikovana unakrsna
+validacija na trening skupu (5 foldova $\times$ 2 ponavljanja), s istim
+foldovima za sve metode. Validacijski i testni skup nisu korišteni za izbor.
+Referentni modeli su logistička regresija i Random Forest. Prije pokretanja
+određen je kriterij izbora: najveća F1-mjera za klasu prevare, uprosječena
+kroz oba modela. F1 pri pragu 0,5 direktno pokazuje kako balansiranje mijenja
+odluke modela, a AUC-PR i MCC služe kao provjera. Prvo su sve metode
+upoređene uz potpuno balansiranje 1:1 (tabela~\ref{tab:balansiranje-metode}).
+
+\begin{table}[H]\centering
+\caption{Poređenje metoda balansiranja uz omjer 1:1: prosjek unakrsne validacije za klasu prevare}\label{tab:balansiranje-metode}
+\small
+\begin{tabularx}{\linewidth}{@{}Y rrr rrr@{}}\toprule
+& \multicolumn{3}{c}{Logistička regresija} & \multicolumn{3}{c}{Random Forest} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Metoda & F1 & Prec. & Recall & F1 & Prec. & Recall \\ \midrule
+Bez balansiranja & 0,050 & 0,480 & 0,027 & 0,656 & 0,968 & 0,500 \\
+Težine klasa & 0,044 & 0,023 & 0,766 & 0,692 & 0,946 & 0,550 \\
+RUS (polazno rješenje) & 0,042 & 0,022 & 0,795 & 0,096 & 0,051 & 0,901 \\
+ROS & 0,044 & 0,023 & 0,763 & \textbf{0,720} & 0,902 & 0,604 \\
+SMOTE & 0,048 & 0,025 & 0,775 & 0,714 & 0,860 & 0,614 \\
+SMOTENC & 0,049 & 0,026 & 0,724 & 0,651 & 0,682 & 0,631 \\
+Borderline-SMOTE & \textbf{0,057} & 0,030 & 0,670 & 0,682 & 0,883 & 0,559 \\
+ADASYN & 0,044 & 0,023 & 0,800 & 0,704 & 0,845 & 0,609 \\
+SMOTE + Tomek & 0,048 & 0,025 & 0,775 & 0,714 & 0,860 & 0,614 \\
+SMOTE + ENN & 0,047 & 0,024 & 0,778 & 0,677 & 0,751 & 0,623 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Polazno rješenje, RUS 1:1, najlošije je za oba modela. Kod Random Foresta
+F1 pada s 0,656 (bez balansiranja) na 0,096: recall raste na 0,901, ali
+preciznost pada na 0,051, jer model treniran na odnosu 50/50 na realističnom
+odnosu klasa mnogo legitimnih transakcija označava kao prevare. Isti obrazac
+opisuju Afriyie i saradnici \cite{afriyie2023fraud}. Oversampling metode i
+težine klasa poboljšavaju Random Forest (ROS 0,720, SMOTE 0,714, ADASYN 0,704).
+Hibridne metode ne donose poboljšanje: SMOTE + Tomek daje iste rezultate kao
+SMOTE, jer Tomek parova gotovo nema, a SMOTE + ENN je slabiji. SMOTENC nije
+bolji od običnog SMOTE-a, jer postoje samo dva kategorička atributa. Kod logističke
+regresije sve metode uz omjer 1:1 daju F1 ispod 0,06, uz preciznost od samo
+2--3\,\%, dok bez balansiranja model gotovo ne prepoznaje prevare (recall 0,027).
+
+\textbf{Uticaj omjera klasa.} Zato je za RUS, ROS, SMOTE i SMOTENC ispitan i
+omjer prevara i legitimnih transakcija nakon balansiranja, od 1:50 do 1:1
+(parametar \texttt{sampling\_strategy}). Rezultati su na
+slici~\ref{fig:balansiranje-omjer} i u tabeli~\ref{tab:balansiranje-omjer}.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{slike/balansiranje_omjer.png}
+\caption{F1-mjera za klasu prevare u zavisnosti od omjera klasa nakon balansiranja (prosjek ponovljene 5-struke unakrsne validacije). Isprekidana linija označava model bez balansiranja.}
+\label{fig:balansiranje-omjer}
+\end{figure}
+
+\begin{table}[H]\centering
+\caption{F1-mjera za klasu prevare po metodi i omjeru klasa nakon balansiranja}\label{tab:balansiranje-omjer}
+\small
+\begin{tabularx}{\linewidth}{@{}p{.2\linewidth}Y rrrrrr@{}}\toprule
+Model & Metoda & 1:50 & 1:20 & 1:10 & 1:4 & 1:2 & 1:1 \\ \midrule
+Log. regresija & RUS & 0,335 & 0,445 & 0,351 & 0,141 & 0,067 & 0,042 \\
+ & ROS & 0,346 & 0,442 & 0,359 & 0,145 & 0,067 & 0,044 \\
+ & SMOTE & 0,324 & \textbf{0,474} & 0,337 & 0,130 & 0,063 & 0,048 \\
+ & SMOTENC & 0,313 & 0,429 & 0,311 & 0,115 & 0,065 & 0,049 \\ \midrule
+Random Forest & RUS & 0,686 & 0,673 & 0,602 & 0,396 & 0,228 & 0,096 \\
+ & ROS & 0,727 & \textbf{0,734} & 0,732 & 0,733 & 0,727 & 0,720 \\
+ & SMOTE & 0,697 & 0,726 & 0,730 & 0,724 & 0,705 & 0,714 \\
+ & SMOTENC & 0,706 & 0,712 & 0,716 & 0,707 & 0,688 & 0,651 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Kod logističke regresije omjer je presudan: F1 raste od 0,04--0,05 (1:1) do
+0,43--0,47 (1:20). Potpuno balansiranje pomjera procijenjene vjerovatnoće
+toliko da pri pragu 0,5 previše legitimnih transakcija postaje prevara. Kod
+Random Foresta oversampling metode daju stabilne rezultate za sve omjere, dok
+RUS slabi s porastom omjera, jer odbacuje sve više legitimnih transakcija.
+Prema unaprijed određenom kriteriju najbolja je konfiguracija
+\textbf{SMOTE 1:20}, s prosječnom F1-mjerom 0,600 (logistička regresija 0,474,
+Random Forest 0,726). Slijede ROS 1:20 (0,588), SMOTENC 1:20 (0,570) i RUS 1:20
+(0,559). Razlika između SMOTE 1:20 i ROS 1:20 manja je od standardne devijacije
+između foldova, pa su te dvije metode praktično ravnopravne. SMOTE ima prednost
+jer pravi nove primjere umjesto da ponavlja iste prevare, čime se smanjuje
+rizik da model zapamti pojedinačne transakcije. Uz omjer 1:20 broj prevara u
+treningu raste s 203 na 1\,739, a sve legitimne transakcije ostaju sačuvane
+(tabela~\ref{tab:podjela-priprema}).
+
+\textbf{Provjera na validacijskom skupu.} Modeli bez balansiranja, s polaznim
+RUS 1:1 i s odabranim SMOTE 1:20 trenirani su na cijelom trening skupu i
+provjereni na validacijskom skupu (tabela~\ref{tab:balansiranje-validacija}).
+
+\begin{table}[H]\centering
+\caption{Provjera metoda balansiranja na validacijskom skupu (43 prevare, 7\,458 legitimnih transakcija)}\label{tab:balansiranje-validacija}
+\small
+\begin{tabularx}{\linewidth}{@{}p{.2\linewidth}Y rrr rrr@{}}\toprule
+Model & Balansiranje & TP & FN & FP & Prec. & Recall & F1 \\ \midrule
+Log. regresija & Bez balansiranja & 1 & 42 & 2 & 0,333 & 0,023 & 0,043 \\
+ & RUS 1:1 & 42 & 1 & 1\,584 & 0,026 & 0,977 & 0,050 \\
+ & SMOTE 1:20 & 32 & 11 & 26 & 0,552 & 0,744 & \textbf{0,634} \\ \midrule
+Random Forest & Bez balansiranja & 30 & 13 & 1 & 0,968 & 0,698 & \textbf{0,811} \\
+ & RUS 1:1 & 42 & 1 & 652 & 0,061 & 0,977 & 0,114 \\
+ & SMOTE 1:20 & 31 & 12 & 3 & 0,912 & 0,721 & 0,805 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+RUS 1:1 i na validaciji daje velik broj lažnih uzbuna (1\,584 i 652). Kod
+logističke regresije SMOTE 1:20 podiže F1 s 0,043 na 0,634. Kod Random Foresta
+SMOTE 1:20 i rad bez balansiranja daju praktično isti rezultat: razlika je
+jedna prepoznata prevara i dvije lažne uzbune. Random Forest je, dakle, manje
+osjetljiv na nebalansiranost od logističke regresije, a odabrana metoda mu ne
+šteti. Zbog samo 43 prevare u validaciji jedna transakcija mijenja recall za
+oko 2,3 procentna poena, pa je glavni oslonac izbora unakrsna validacija.
+Rezultati djelimično potvrđuju polaznu hipotezu (odjeljak~\ref{sec:radovi}):
+balansiranje povećava osjetljivost, a pad preciznosti je izražen samo kod
+potpunog balansiranja, dok umjereni oversampling zadržava visoku preciznost.
+
+\textbf{SMOTE do omjera 1:20 je zadana metoda balansiranja tima.} U notebooku
+je dostupna kao funkcija \texttt{make\_model\_pipeline}, koja vraća pipeline
+sa skaliranjem, kodiranjem i balansiranjem. Balansiranje se izvršava samo pri
+treniranju, a validacijski i testni skup se ne mijenjaju. Zato se sprema
+nebalansirani trening skup, a ne unaprijed balansiran. Pošto efekat
+balansiranja zavisi od modela, u zadatku 2.2 svaki član za svoj algoritam
+ponovo provjerava uticaj nebalansiranosti istim postupkom. Alternativa
+promjeni omjera je pomjeranje praga odluke na validacijskom skupu, što se može
+razmotriti uz podešavanje hiperparametara.
+\referencaKod{Izbor metode balansiranja klasa}
 
 \textbf{Posljedice pripreme.} Pripremom je formiran reproduktivan postupak
 koji istovremeno čuva realističan odnos klasa za evaluaciju, sprečava
 preklapanje transakcija između skupova i omogućava primjenu algoritama na
-mješovitim numeričkim i kategoričkim podacima. Balansiranje treninga treba da
-poveća osjetljivost na rijetku klasu, dok će validacija i test pokazati koliko
-se taj dobitak zadržava u realističnim uslovima. Pripremljeni skupovi i
-pipeline koriste se u zadacima izgradnje i poređenja klasifikacijskih modela.
+mješovitim numeričkim i kategoričkim podacima. Balansiranje je dio pipelinea
+i primjenjuje se samo na trening podatke, a validacija i test zadržavaju
+izvorni odnos klasa. Pripremljeni skupovi i pipeline koriste se u zadacima
+izgradnje i poređenja klasifikacijskih modela.
 
 \begin{table}[htbp]\centering
 \caption{Primijenjeni postupci pripreme podataka}\label{tab:priprema}
@@ -170,13 +316,13 @@ Atribut(i) & Postupak & Razlog / posljedica \\ \midrule
 \texttt{is\_fraud} & Izdvajanje ciljne varijable prije transformacije ulaza &
 Sprječava da ciljna informacija bude korištena kao ulazni atribut. \\
 Identifikujući i redundantni atributi & Uklanjanje uz provjeru unakrsnom validacijom &
-Model ne može prepoznati korisnika; AUC-PR raste kod oba referentna modela. \\
-Numerički atributi & $\log(1+x)$ za iznos, ciklično kodiran sat, medijalna imputacija; standardizacija samo u skaliranoj varijanti &
-Pipeline je robustan na nedostajuće vrijednosti i prilagođen algoritmu. \\
+Otežava prepoznavanje korisnika; AUC-PR raste kod oba referentna modela. \\
+Numerički atributi & $\log(1+x)$ za iznos, ciklično kodiran sat, medijalna imputacija i standardizacija &
+Pipeline je robustan na nedostajuće vrijednosti; skala odgovara i modelima i SMOTE-u. \\
 Kategorički atributi & Imputacija najčešćom vrijednošću i one-hot kodiranje &
 Omogućava rad modela sa tekstualnim kategorijama i nepoznatim vrijednostima. \\
-Trening skup & Random undersampling legitimnih transakcija &
-Dobija se odnos 50/50 bez mijenjanja validacije i testa. \\
+Trening skup & SMOTE do omjera 1:20 kao korak pipelinea, odabran poređenjem deset pristupa &
+Najveća prosječna F1-mjera u unakrsnoj validaciji; balansira se samo trening dio svakog folda. \\
 Validacija i test & Bez balansiranja i bez ponovnog učenja transformacija &
 Metrike ostaju reprezentativne za izvorni odnos klasa. \\
 \bottomrule\end{tabularx}
