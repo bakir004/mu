@@ -377,9 +377,10 @@ Tri datoteke \textbf{nisu nezavisni skupovi}: balansirani skup dijeli
 7\,593 transakcije sa skupom 15k i 7\,795 sa skupom 50k, dok se svih
 15\,000 transakcija iz 15k nalazi u 50k. Zato druga dva CSV-a nisu
 nezavisni testovi modela treniranog na cijelom balansiranom skupu.
-Prije modeliranja treba razdvojiti trening, validaciju i test, a
-balansiranje i transformacije koje uče parametre provoditi samo
-unutar trening dijela. Podjela i pipeline još nisu implementirani;
-prikazani rezultati pripadaju istraživačkoj analizi, a ne evaluaciji modela.
+Zato su u odjeljku~\ref{sec:priprema} trening, validacijski i testni
+skup izdvojeni iz \texttt{fraud\_50k.csv}, a balansiranje i
+transformacije koje uče parametre provode se samo unutar trening
+dijela. Rezultati prikazani u ovom odjeljku pripadaju istraživačkoj
+analizi, a ne evaluaciji modela.
 \referencaKod{1.3 Istraživačka analiza podataka}
 \clearpage
