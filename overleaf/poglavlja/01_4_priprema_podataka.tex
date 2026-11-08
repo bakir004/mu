@@ -28,43 +28,108 @@ Nakon podjele provjereno je da između skupova nema zajedničkih vrijednosti
 unutar pojedinačnog skupa. Na taj način se ista transakcija ne može pojaviti u
 treningu i testu, čime se smanjuje rizik od curenja podataka.
 
-\textbf{Izbor i izvođenje atributa.} Iz modela su uklonjeni
-\texttt{trans\_num}, \texttt{cc\_num}, \texttt{first}, \texttt{last} i
-\texttt{street}. Ove kolone predstavljaju identifikatore ili lične podatke
-koji se ponavljaju kroz transakcije i mogli bi omogućiti modelu da zapamti
-konkretnog korisnika, karticu ili transakciju umjesto da nauči opšte obrasce
-prevare. Sirove kolone \texttt{trans\_date\_trans\_time}, \texttt{dob} i
-\texttt{unix\_time} takođe nisu direktno korištene. Iz njih, odnosno iz
-datuma i koordinata, izvedeni su atributi prikazani u tabeli~\ref{tab:atributi-priprema}.
+\textbf{Izbor i izvođenje atributa.} Odluke o atributima slijede zaključke
+istraživačke analize (odjeljak~\ref{sec:analiza}):
+\begin{itemize}
+  \item Uklonjeni su identifikatori i lični podaci \texttt{trans\_num},
+        \texttt{cc\_num}, \texttt{first}, \texttt{last} i \texttt{street}, kako
+        model ne bi zapamtio konkretnog korisnika, karticu ili transakciju umjesto
+        da nauči opšte obrasce prevare.
+  \item Samo uklanjanje \texttt{cc\_num} nije dovoljno: u \texttt{fraud\_50k.csv}
+        kombinacija \texttt{zip} i \texttt{job} jednoznačno određuje svaku od 929
+        kartica. Zato su uklonjeni i \texttt{zip}, \texttt{city} i \texttt{job}.
+  \item Koordinate korisnika i trgovca gotovo su linearno povezane
+        ($r \approx 0{,}99$) i pojedinačno slabo povezane s klasom. Zamijenjene su
+        udaljenošću \texttt{distance\_km}, izvedenom Haversine formulom.
+  \item Sat transakcije je cikličan, pa je kodiran sinusom i kosinusom
+        (\texttt{hour\_sin}, \texttt{hour\_cos}). Tako su 23 h i 0 h susjedne
+        vrijednosti, što je važno zbog noćnog obrasca prevara.
+  \item Iznos i populacija grada izrazito su asimetrični udesno, pa se koriste
+        u obliku $\log(1+x)$. Ova transformacija nema parametara koji se uče, pa
+        ne uzrokuje curenje informacija između skupova.
+  \item Sirovi vremenski zapisi \texttt{trans\_date\_trans\_time}, \texttt{dob}
+        i \texttt{unix\_time} zamijenjeni su starošću, satom i danom u sedmici.
+\end{itemize}
+
+\textbf{Provjera izbora atributa.} O preostalim atributima \texttt{merchant}
+(693 vrijednosti), \texttt{city\_pop} i \texttt{state} odlučeno je unakrsnom
+validacijom. Sama populacija grada jednoznačno određuje 754 od 929 kartica, pa
+i ona može poslužiti za prepoznavanje korisnika. Upoređena su četiri skupa
+atributa: polazni izbor korišten prije dorade (17 atributa, uključujući
+\texttt{zip}, \texttt{city}, \texttt{job}, koordinate i \texttt{merchant}),
+skup usklađen s analizom, isti skup bez \texttt{merchant} te skup bez
+\texttt{merchant} i bez lokacije korisnika (\texttt{city\_pop}, \texttt{state}).
+Poređenje je urađeno stratifikovanom unakrsnom validacijom s 5 foldova,
+isključivo na trening skupu. Kao referentni modeli korišteni su logistička
+regresija i Random Forest, a nebalansiranost je u ovom koraku tretirana samo
+težinama klasa. Kodiranje i skaliranje učeni su unutar svakog folda.
 
 \begin{table}[H]\centering
-\caption{Izvedeni i uklonjeni atributi}\label{tab:atributi-priprema}
+\caption{Izbor atributa: prosjek 5-struke unakrsne validacije na trening skupu}\label{tab:izbor-atributa}
+\small
+\begin{tabularx}{\linewidth}{@{}Y r r r r@{}}\toprule
+Skup atributa & Atributa & AUC-PR (LR) & AUC-PR (RF) & F1 (RF) \\ \midrule
+Polazni izbor & 17 & 0,099 & 0,542 & 0,377 \\
+Usklađen s analizom & 11 & 0,055 & 0,618 & 0,596 \\
+Usklađen s analizom, bez \texttt{merchant} & 10 & 0,118 & 0,712 & 0,634 \\
+\textbf{Bez \texttt{merchant} i lokacije korisnika} & \textbf{8} & \textbf{0,193} & \textbf{0,764} & \textbf{0,700} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Posljednji skup daje najveći AUC-PR za oba modela. Atribut \texttt{merchant}
+ima 693 vrijednosti, a trening skup samo 203 prevare, pa većina trgovaca nema
+dovoljno prevara da bi model iz njih naučio pouzdan obrazac. Slično važi za
+\texttt{state} (51 vrijednost). Kod Random Foresta razlika između posljednja
+dva skupa (0,052) manja je od standardne devijacije između foldova, pa je
+manji skup odabran i zato što je dosljedan principu da model ne treba
+prepoznavati korisnika. F1-mjera logističke regresije pri pragu 0,5 niska je u
+svim varijantama (0,044--0,167), jer uz težine klasa model mnogo legitimnih
+transakcija označava kao prevare. Zato je izbor zasnovan na AUC-PR, koji ne
+zavisi od praga.
+
+Konačni skup ima \textbf{8 ulaznih atributa}, prikazanih u
+tabeli~\ref{tab:atributi-priprema}, i ciljnu varijablu \texttt{is\_fraud}.
+Podjela je urađena po transakcijama, pa se isti korisnici pojavljuju i u
+treningu i u testu; procjena zato odgovara otkrivanju prevara kod postojećih
+korisnika. U pripremljenim skupovima nije bilo nedostajućih vrijednosti, ali je
+imputacija ipak uključena u pipeline kako bi obrada bila robusna i za buduće
+podatke.
+
+\begin{table}[H]\centering
+\caption{Izvedeni, zadržani i uklonjeni atributi}\label{tab:atributi-priprema}
 \small
 \begin{tabularx}{\linewidth}{@{}p{.28\linewidth}Y Y@{}}\toprule
 Atribut(i) & Postupak & Razlog / posljedica \\ \midrule
 \texttt{trans\_num}, \texttt{cc\_num}, \texttt{first}, \texttt{last},
 \texttt{street} & Uklanjanje identifikatora i ličnih podataka &
 Smanjuje rizik od memorisanja korisnika i prevelikog prilagođavanja. \\
+\texttt{zip}, \texttt{city}, \texttt{job}, \texttt{city\_pop}, \texttt{state} &
+Uklanjanje atributa koji određuju ili lociraju korisnika &
+\texttt{zip} i \texttt{job} zajedno jednoznačno određuju svaku karticu;
+uklanjanje poboljšava AUC-PR u unakrsnoj validaciji. \\
+\texttt{merchant} & Uklanjanje (693 vrijednosti) &
+Premalo prevara po trgovcu; uklanjanje poboljšava AUC-PR oba modela. \\
 \texttt{trans\_date\_trans\_time}, \texttt{dob}, \texttt{unix\_time} &
 Uklanjanje sirovih vremenskih zapisa nakon izvođenja atributa &
 Model dobija interpretabilne vremenske karakteristike umjesto sirovih zapisa. \\
 \texttt{age\_years} & Starost korisnika u trenutku transakcije &
 Opisuje demografski kontekst transakcije; vrijednosti u pripremljenim skupovima
 su približno od 14 do 96 godina. \\
-\texttt{hour}, \texttt{day\_of\_week} & Sat i dan u sedmici iz datuma transakcije &
-Omogućava modelu da koristi vremenske obrasce uočene u analizi. \\
+\texttt{hour\_sin}, \texttt{hour\_cos}, \texttt{day\_of\_week} &
+Ciklično kodiran sat i dan u sedmici iz datuma transakcije &
+Omogućava modelu da koristi noćni obrazac uočen u analizi. \\
+\texttt{amt\_log} & $\log(1+x)$ transformacija iznosa &
+Smanjuje asimetriju udesno; najvažniji pojedinačni atribut iz analize. \\
 \texttt{lat}, \texttt{long}, \texttt{merch\_lat}, \texttt{merch\_long} &
 Izvođenje atributa \texttt{distance\_km} Haversine formulom &
-Sažima geografsku udaljenost korisnika od trgovca; raspon je približno
-0,07--146,13 km. \\
+Uklanja redundantne koordinate i sažima udaljenost korisnika od trgovca;
+raspon je približno 0,07--146,13 km. \\
+\texttt{category}, \texttt{gender} & Zadržani kategorički atributi &
+Kategorija kupovine pokazuje izražene razlike između klasa. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-
-Nakon ovih koraka ostaje 17 ulaznih atributa i ciljna varijabla
-\texttt{is\_fraud}. U pripremljenim skupovima nije bilo nedostajućih vrijednosti,
-ali je imputacija ipak uključena u pipeline kako bi obrada bila robusna i za
-buduće podatke.
 
 \textbf{Balansiranje klasa.} Na trening skupu zadržane su sve 203 prevarne
 transakcije, a random undersamplingom je odabrano 203 legitimnih transakcija.
@@ -76,13 +141,12 @@ preciznost, recall, F1-mjera i AUC-PR, a ne samo tačnost.
 
 \textbf{Kodiranje i skaliranje.} Numerički atributi obrađeni su imputacijom
 medijanom, a kategorički atributi imputacijom najčešće vrijednosti. Kategorije
-\texttt{merchant}, \texttt{category}, \texttt{gender}, \texttt{city},
-\texttt{state}, \texttt{zip} i \texttt{job} pretvorene su u numerički oblik
-one-hot kodiranjem. Korišten je \texttt{handle\_unknown=ignore}, pa kategorija
-koja se pojavi u validaciji ili testu, a nije bila prisutna u treningu, ne
-prekida obradu.
+\texttt{category} i \texttt{gender} pretvorene su u numerički oblik one-hot
+kodiranjem. Korišten je \texttt{handle\_unknown=ignore}, pa kategorija koja se
+pojavi u validaciji ili testu, a nije bila prisutna u treningu, ne prekida
+obradu.
 
-Od 17 ulaznih atributa dobivena su 1\,244 numerička atributa nakon kodiranja.
+Od 8 ulaznih atributa dobivena su 22 numerička atributa nakon kodiranja.
 Za logističku regresiju i druge modele osjetljive na skalu koristi se pipeline
 sa \texttt{StandardScaler}-om. Za modele zasnovane na stablima koristi se
 pipeline bez skaliranja, jer poređenje vrijednosti po granama stabla ne
@@ -105,7 +169,9 @@ pipeline koriste se u zadacima izgradnje i poređenja klasifikacijskih modela.
 Atribut(i) & Postupak & Razlog / posljedica \\ \midrule
 \texttt{is\_fraud} & Izdvajanje ciljne varijable prije transformacije ulaza &
 Sprječava da ciljna informacija bude korištena kao ulazni atribut. \\
-Numerički atributi & Medijalna imputacija; standardizacija samo u skaliranoj varijanti &
+Identifikujući i redundantni atributi & Uklanjanje uz provjeru unakrsnom validacijom &
+Model ne može prepoznati korisnika; AUC-PR raste kod oba referentna modela. \\
+Numerički atributi & $\log(1+x)$ za iznos, ciklično kodiran sat, medijalna imputacija; standardizacija samo u skaliranoj varijanti &
 Pipeline je robustan na nedostajuće vrijednosti i prilagođen algoritmu. \\
 Kategorički atributi & Imputacija najčešćom vrijednošću i one-hot kodiranje &
 Omogućava rad modela sa tekstualnim kategorijama i nepoznatim vrijednostima. \\
