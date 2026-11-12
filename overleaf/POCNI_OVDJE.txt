@@ -1,6 +1,0 @@
-1. Ucitajte cijeli ZIP u Overleaf: New Project -> Upload Project.
-2. Otvorite konfiguracija.tex: imena su upisana, algoritme naknadno odaberite.
-3. Svaki clan pise svoje dvije datoteke (literatura i modeli).
-4. Zajednicke sekcije popunjavate direktno po tackama specifikacije.
-5. Kod je u GitHub repozitoriju bakir004/mu; poveznica se mijenja samo u konfiguracija.tex.
-6. main.tex ne mijenjati tokom pisanja.

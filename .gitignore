@@ -18,3 +18,6 @@ __pycache__/
 *.fls
 *.bbl
 *.blg
+
+# Large Kaggle source file stays local; download it into the project root when reproducing sampling.
+/fraudTrain.csv

@@ -1,0 +1,22 @@
+\begingroup\small\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.21\linewidth}>{\raggedright\arraybackslash}p{.27\linewidth}>{\raggedright\arraybackslash}p{.33\linewidth}>{\raggedright\arraybackslash}p{.10\linewidth}@{}}
+\caption{Sažetak pripreme po karakteristikama i poveznica s kodom}\label{tab:priprema-po-atributima}\\
+\toprule Karakteristika & Postupak & Obrazloženje & Kod \\ \midrule\endfirsthead
+\toprule Karakteristika & Postupak & Obrazloženje & Kod \\ \midrule\endhead
+\bottomrule\endfoot
+\texttt{amt} & Zamjena sa \texttt{amt\_log1p} i standardizacija & Sabijanje izraženog desnog repa bez gubitka redova. & A, C \\
+\texttt{city\_pop} & Zamjena sa \texttt{city\_pop\_log1p} i standardizacija & Veliki gradovi ostaju zastupljeni, uz manju razliku skala. & A, C \\
+\texttt{lat}, \texttt{long} & Zadržavanje i standardizacija & Čuvanje lokacije korisnika; koordinate su dopuštene. & A, C \\
+\texttt{merch\_lat}, \texttt{merch\_long} & Izvođenje \texttt{distance\_km}, zatim izostavljanje & Sažimanje prostornog odnosa jako povezanih koordinata. & A \\
+\texttt{trans\_date\_}\newline\texttt{trans\_time} & Četiri ciklične komponente sata i dana & Čuvanje susjednosti početka i kraja perioda. & A \\
+\texttt{dob} & Izvođenje \texttt{age\_years}; izostavljanje sirovog datuma & Starost u trenutku konkretne transakcije. & A \\
+\texttt{unix\_time} & Izostavljanje & Neusklađenost s tekstualnim vremenom transakcije. & A \\
+\texttt{cc\_num}, \texttt{first}, \texttt{last}, \texttt{street} & Izostavljanje iz ulaza & Identifikatori i lični podaci sa mnogo ponavljanja. & A \\
+\texttt{city}, \texttt{zip} & Izostavljanje iz ulaza & Mnogo detaljnih geografskih oznaka, uz već dostupne koordinate i državu. & A \\
+\texttt{merchant}, \texttt{job} & Grupisanje vrijednosti s manje od 20 transakcija i one-hot & Smanjenje broja rijetkih oznaka uz očuvanje zasebnih kategorija za većinu redova. & C \\
+\texttt{category}, \texttt{gender}, \texttt{state} & One-hot bez grupisanja & Nominalni atributi bez prirodnog poretka. & C \\
+Numerički ulazi & Rezervna imputacija medijanom & Robusna središnja vrijednost za asimetrične raspodjele; sada nema praznina. & C \\
+Nominalni ulazi & Rezervna imputacija najčešćom vrijednošću & Čuvanje postojeće kategorije; sada nema praznina. & C \\
+\texttt{is\_fraud} & Odvajanje cilja, bez transformacije & Ciljna oznaka se ne uključuje u ulaze. & A, D \\
+\texttt{trans\_num} & Odvajanje i čuvanje identifikatora & Veza sa izvornim redom i praćenje preklapanja skupova. & A, D \\
+\end{longtable}\endgroup

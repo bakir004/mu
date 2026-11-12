@@ -1,0 +1,29 @@
+\begingroup\small\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.19\linewidth}>{\raggedright\arraybackslash}p{.13\linewidth}>{\raggedright\arraybackslash}p{.28\linewidth}>{\raggedright\arraybackslash}p{.34\linewidth}@{}}
+\caption{Pojedinačni pregled svih 22 atributa balansiranog skupa}\label{tab:eda_atributi}\\
+\toprule Atribut & Tip & Raspon / sažetak & Zapažanje \\ \midrule\endfirsthead
+\toprule Atribut & Tip & Raspon / sažetak & Zapažanje \\ \midrule\endhead
+\bottomrule\endfoot
+\texttt{trans\_date\_}\newline\texttt{trans\_time} & datum & 01.01.2019.--21.06.2020. & Nepotpun posljednji mjesec; izražena koncentracija prevara u noćnim satima. \\
+\texttt{cc\_num} & oznaka & 977 vrijednosti; najčešća 630451534402 (38) & Ista kartica se ponavlja kroz različite transakcije. \\
+\texttt{merchant} & kategorički & 693 vrijednosti; najčešća fraud\_Kilback LLC (72) & Zajednički prefiks fraud\_ ne razlikuje klase; mnogo rijetkih trgovaca. \\
+\texttt{category} & kategorički & 14 vrijednosti; najčešća grocery\_pos (2494) & 14 vrsta kupovine; različita zastupljenost po klasi. \\
+\texttt{amt} & numerički & 1,00 do 6\,337,25 & Desna asimetrija 1,48; najveći iznos pripada legitimnoj transakciji. \\
+\texttt{first} & kategorički & 352 vrijednosti; najčešća Christopher (330) & Ime se ponavlja i nije jedinstvena oznaka osobe. \\
+\texttt{last} & kategorički & 480 vrijednosti; najčešća Smith (301) & Prezime se ponavlja kroz transakcije i korisnike. \\
+\texttt{gender} & kategorički & 2 vrijednosti; najčešća F (7835) & Dvije nominalne kategorije; bez poretka. \\
+\texttt{street} & kategorički & 977 vrijednosti; najčešća 561 Little Plain Apt. 738 (38) & Adresa se ponavlja u kupovinama iste kartice. \\
+\texttt{city} & kategorički & 889 vrijednosti; najčešća Warren (57) & Mnogo različitih oznaka; naziv grada nije jednoznačan bez države. \\
+\texttt{state} & kategorički & 51 vrijednosti; najčešća TX (1024) & 51 nominalna oznaka različite zastupljenosti. \\
+\texttt{zip} & oznaka & 964 vrijednosti; najčešća 82514 (45) & 964 oznake; 919 četverocifrenih zapisa; broj nije udaljenost. \\
+\texttt{lat} & numerički & 20,03 do 66,69 & Dopušten raspon; snažno prati širinu trgovca. \\
+\texttt{long} & numerički & -165,67 do -67,95 & Lijeva asimetrija odražava lokacije; vrijednosti su dopuštene. \\
+\texttt{city\_pop} & numerički & 23,00 do 2\,906\,700,00 & Izražen desni rep; veliki gradovi ostaju sačuvani. \\
+\texttt{job} & kategorički & 493 vrijednosti; najčešća Materials engineer (114) & Mnogo rijetkih zanimanja; broj transakcija nije broj osoba. \\
+\texttt{dob} & datum & 30.10.1924.--29.01.2005. & Sva rođenja prethode odgovarajućoj transakciji. \\
+\texttt{trans\_num} & oznaka & 15\,012 jedinstvenih oznaka & Sve oznake jedinstvene; provjera duplikata i podjele. \\
+\texttt{unix\_time} & numerički & 1\,325\,401\,915,00 do 1\,371\,813\,091,00 & Standardno tumačenje daje godine 2012--2013 umjesto 2019--2020. \\
+\texttt{merch\_lat} & numerički & 19,04 do 67,51 & Jaka povezanost sa geografskom širinom korisnika. \\
+\texttt{merch\_long} & numerički & -166,55 do -67,03 & Jaka povezanost sa geografskom dužinom korisnika. \\
+\texttt{is\_fraud} & cilj & 2 vrijednosti; najčešća 1 (7506) & Cilj 0/1; po 7.506 redova, odvojen od ulaza. \\
+\end{longtable}\endgroup

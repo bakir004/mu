@@ -1,13 +1,26 @@
 % Tehnicke postavke. Nema potrebe mijenjati tokom pisanja.
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{lmodern}
+\else
+  \usepackage{fontspec}
+  \setmainfont{lmroman10-regular.otf}[
+    BoldFont=lmroman10-bold.otf,
+    ItalicFont=lmroman10-italic.otf,
+    BoldItalicFont=lmroman10-bolditalic.otf]
+  \setmonofont{lmmono10-regular.otf}[
+    ItalicFont=lmmono10-italic.otf,
+    BoldFont=lmmonolt10-bold.otf,
+    BoldItalicFont=lmmonolt10-boldoblique.otf]
+\fi
 \usepackage[bosnian]{babel}
-\usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{geometry}
 \geometry{a4paper,left=2.7cm,right=2.7cm,top=2.7cm,bottom=2.7cm}
 \usepackage{setspace}
-\setstretch{1.16}
+\setstretch{1.08}
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{array}
@@ -42,12 +55,13 @@
 \renewcommand{\headrulewidth}{0.3pt}
 \setlength{\headheight}{15pt}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
 \setlist[itemize]{leftmargin=*,topsep=4pt,itemsep=2pt}
 \setlist[enumerate]{leftmargin=*,topsep=4pt,itemsep=2pt}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcommand{\dopuni}[1]{\textcolor{dopunaBoja}{\textit{[Dopuniti: #1]}}}
-% Ovo je JEDINI format reference na kod: poveznica na repozitorij + naslov odjeljka u biljeznici.
+% Reference na kod vode do repozitorija i navode odgovarajući odjeljak bilježnice.
 \newcommand{\referencaKod}[1]{\par\smallskip{\small\textbf{Kod:} \KodRepozitorij{}, bilježnica \texttt{projekat.ipynb}, odjeljak \emph{„#1“}.}\par}
 % Rezervno mjesto za slike; dokument se kompajlira i bez PNG grafikona.
 \newcommand{\slika}[3]{%

@@ -1,119 +1,104 @@
+\clearpage
 \subsection{Priprema i transformacija podataka}\label{sec:priprema}
-\textbf{Polazni podaci i podjela.} U odjeljku 1.3 skup
-\texttt{fraud\_balanced.csv} korišten je za istraživačku analizu, jer omogućava
-pregled obrazaca obje klase. Za pripremu modeliranja odabran je
-\texttt{fraud\_50k.csv}, koji zadržava izvorni, izrazito nebalansirani odnos
-klasa. Time se izbjegava da se konačna procjena zasniva na vještačkom odnosu
-od 50\% prevara.
+Pripremamo oba cijela skupa istim postupkom. Balansirani zadržava 15\,012 redova,
+a nebalansirani 15\,000. Čuvanje obje verzije omogućava rad s podjednako
+zastupljenim klasama i s približnim izvornim udjelom prevara. Razlika u njihovim
+raspodjelama ostaje očuvana; transformacije mijenjaju prikaz ulaza, a ne oznake klasa.
 
-Podaci su stratifikovanom podjelom razdvojeni na trening (70\%), validacijski
-(15\%) i testni skup (15\%), uz \texttt{random\_state=42}. Dobijene veličine i
-raspodjela ciljne klase prikazane su u tabeli~\ref{tab:podjela-priprema}.
+\subsubsection*{Sažetak postupaka po karakteristikama}
+Tabela~\ref{tab:priprema-po-atributima} povezuje svaki atribut ili grupu atributa
+sa postupkom, razlogom i odjeljkom bilježnice. Oznake A--D predstavljaju odjeljke
+\texttt{1.4-A} do \texttt{1.4-D} u \texttt{projekat.ipynb}. Odjeljak
+\texttt{1.4-B} sadrži statističke i grafičke provjere promjena.
+\input{tabele/priprema_po_atributima}
+\referencaKod{1.4-A Izbor i izvođenje atributa}
 
-\begin{table}[H]\centering
-\caption{Podjela podataka prije i poslije balansiranja}\label{tab:podjela-priprema}
-\small
-\begin{tabularx}{\linewidth}{@{}p{.28\linewidth}r r r Y@{}}\toprule
-Skup & Redovi & Legitimne & Prevare & Udio prevara \\ \midrule
-Trening prije balansiranja & 34\,999 & 34\,796 & 203 & 0,580\% \\
-Trening poslije balansiranja & 406 & 203 & 203 & 50,000\% \\
-Validacija & 7\,501 & 7\,458 & 43 & 0,573\% \\
-Test & 7\,500 & 7\,457 & 43 & 0,573\% \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\subsubsection*{Izbor ulaza i izvođenje smislenih veličina}
+Identifikatori, imena, prezimena i adrese ne opisuju neposredno svojstvo kupovine,
+pa ih izostavljamo iz ulaza. \texttt{trans\_num} čuvamo uz cilj kao metapodatak.
+Grad i poštanski broj izostavljamo zbog 894 i 970 različitih oznaka u uniji
+izvora i preklapanja s dostupnim lokacijskim opisom. Lokaciju zadržavaju
+\texttt{lat}, \texttt{long} i \texttt{state}. Time prihvatamo gubitak detaljnih
+administrativnih oznaka, uz očuvanje izvornog zapisa u CSV-u.
 
-Nakon podjele provjereno je da između skupova nema zajedničkih vrijednosti
-\texttt{trans\_num}, kao ni dupliranih redova ili dupliranih identifikatora
-unutar pojedinačnog skupa. Na taj način se ista transakcija ne može pojaviti u
-treningu i testu, čime se smanjuje rizik od curenja podataka.
+Iz datuma transakcije i rođenja računamo približnu starost u trenutku transakcije.
+Vremensku razliku u sekundama dijelimo sa $86400\cdot365{,}2425$, bez ranog
+zaokruživanja. Za sat i dan koristimo po dvije komponente,
+$\sin(2\pi x/P)$ i $\cos(2\pi x/P)$, sa periodima $P=24$ i $P=7$.
+Par komponenti čuva kružnu susjednost i razlikuje položaje koje sam sinus ne razlikuje.
+Mjesec ostaje u analizi zbog nepotpunog godišnjeg obuhvata.
 
-\textbf{Izbor i izvođenje atributa.} Iz modela su uklonjeni
-\texttt{trans\_num}, \texttt{cc\_num}, \texttt{first}, \texttt{last} i
-\texttt{street}. Ove kolone predstavljaju identifikatore ili lične podatke
-koji se ponavljaju kroz transakcije i mogli bi omogućiti modelu da zapamti
-konkretnog korisnika, karticu ili transakciju umjesto da nauči opšte obrasce
-prevare. Sirove kolone \texttt{trans\_date\_trans\_time}, \texttt{dob} i
-\texttt{unix\_time} takođe nisu direktno korištene. Iz njih, odnosno iz
-datuma i koordinata, izvedeni su atributi prikazani u tabeli~\ref{tab:atributi-priprema}.
+Haversine udaljenost računamo iz četiri izvorne koordinate u radijanima,
+sa poluprečnikom 6\,371,0088 km. Ona opisuje udaljenost zračnom linijom.
+Nakon njenog izvođenja izostavljamo koordinate trgovca, a zadržavamo koordinate
+korisnika i udaljenost. Sirove datume i neusklađeni \texttt{unix\_time} izostavljamo.
+Redoslijed je važan: izvedene veličine računamo prije izostavljanja datuma
+i prije standardizacije koordinata.
 
-\begin{table}[H]\centering
-\caption{Izvedeni i uklonjeni atributi}\label{tab:atributi-priprema}
-\small
-\begin{tabularx}{\linewidth}{@{}p{.28\linewidth}Y Y@{}}\toprule
-Atribut(i) & Postupak & Razlog / posljedica \\ \midrule
-\texttt{trans\_num}, \texttt{cc\_num}, \texttt{first}, \texttt{last},
-\texttt{street} & Uklanjanje identifikatora i ličnih podataka &
-Smanjuje rizik od memorisanja korisnika i prevelikog prilagođavanja. \\
-\texttt{trans\_date\_trans\_time}, \texttt{dob}, \texttt{unix\_time} &
-Uklanjanje sirovih vremenskih zapisa nakon izvođenja atributa &
-Model dobija interpretabilne vremenske karakteristike umjesto sirovih zapisa. \\
-\texttt{age\_years} & Starost korisnika u trenutku transakcije &
-Opisuje demografski kontekst transakcije; vrijednosti u pripremljenim skupovima
-su približno od 14 do 96 godina. \\
-\texttt{hour}, \texttt{day\_of\_week} & Sat i dan u sedmici iz datuma transakcije &
-Omogućava modelu da koristi vremenske obrasce uočene u analizi. \\
-\texttt{lat}, \texttt{long}, \texttt{merch\_lat}, \texttt{merch\_long} &
-Izvođenje atributa \texttt{distance\_km} Haversine formulom &
-Sažima geografsku udaljenost korisnika od trgovca; raspon je približno
-0,07--146,13 km. \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\subsubsection*{Asimetrija, transformacija i izdvojene vrijednosti}
+Za iznos i populaciju koristimo $x'=\ln(1+x)$, odnosno \texttt{log1p}.
+Transformacija je monotona i jače sabija velike vrijednosti, pa čuva poredak
+uz smanjenje desnog repa. Izvorne kolone zamjenjujemo transformisanim ulazima.
+Geografske dužine ne logaritmujemo: negativne vrijednosti imaju dopušteno
+geografsko značenje, a asimetrija odražava raspored lokacija.
+\input{tabele/transformacije}
 
-Nakon ovih koraka ostaje 17 ulaznih atributa i ciljna varijabla
-\texttt{is\_fraud}. U pripremljenim skupovima nije bilo nedostajućih vrijednosti,
-ali je imputacija ipak uključena u pipeline kako bi obrada bila robusna i za
-buduće podatke.
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth,height=.32\textheight,keepaspectratio]{slike/transformacije_gustoce.png}
+\caption{Gustoće iznosa i populacije prije i poslije log1p za oba skupa.}
+\end{figure}
 
-\textbf{Balansiranje klasa.} Na trening skupu zadržane su sve 203 prevarne
-transakcije, a random undersamplingom je odabrano 203 legitimnih transakcija.
-Balansiranje je izvršeno isključivo nad trening skupom. Validacijski i testni
-skup nisu mijenjani i zadržali su izvorni odnos klasa. Takav postupak povećava
-mogućnost da modeli nauče klasu prevare, ali može dovesti do većeg broja
-lažno pozitivnih predikcija. Zbog toga će se u nastavku posebno pratiti
-preciznost, recall, F1-mjera i AUC-PR, a ne samo tačnost.
+U oba skupa smanjuje se asimetrija iznosa i populacije. Preostala umjerena
+asimetrija populacije nije sama po sebi razlog za dodatnu transformaciju.
+IQR granice se ponovo računaju na transformisanoj skali; promjena broja
+izdvajanja ne znači da su redovi izbrisani. Nema potvrđenih neispravnih
+ekstrema, pa ne primjenjujemo automatsko brisanje niti ograničavanje velikih vrijednosti.
+Statistika, gustoće i box plotovi svih izvedenih ulaza za oba skupa dostupni su u kodu.
+\referencaKod{1.4-B Provjera transformacija i outliera}
 
-\textbf{Kodiranje i skaliranje.} Numerički atributi obrađeni su imputacijom
-medijanom, a kategorički atributi imputacijom najčešće vrijednosti. Kategorije
-\texttt{merchant}, \texttt{category}, \texttt{gender}, \texttt{city},
-\texttt{state}, \texttt{zip} i \texttt{job} pretvorene su u numerički oblik
-one-hot kodiranjem. Korišten je \texttt{handle\_unknown=ignore}, pa kategorija
-koja se pojavi u validaciji ili testu, a nije bila prisutna u treningu, ne
-prekida obradu.
+\subsubsection*{Nominalni atributi i rijetke kategorije}
+Trgovac, vrsta kupovine, spol, savezna država i zanimanje nemaju prirodan
+poredak. Zbog toga koristimo one-hot kodiranje, a ne proizvoljne ordinalne
+brojeve. Za \texttt{category}, \texttt{gender} i \texttt{state} čuvamo svih
+14, 2 i 51 kategoriju. Za trgovca i zanimanje prvo grupišemo rijetke vrijednosti.
 
-Od 17 ulaznih atributa dobivena su 1\,244 numerička atributa nakon kodiranja.
-Za logističku regresiju i druge modele osjetljive na skalu koristi se pipeline
-sa \texttt{StandardScaler}-om. Za modele zasnovane na stablima koristi se
-pipeline bez skaliranja, jer poređenje vrijednosti po granama stabla ne
-zahtijeva da atributi budu na istoj skali. U oba slučaja parametri imputacije,
-kodiranja i skaliranja uče se samo na balansiranom trening skupu, a zatim se
-isti transformatori primjenjuju na validaciju i test.
+Prag biramo pregledom frekvencija u uniji 22\,419 jedinstvenih transakcija.
+Prag 20 čuva zasebne oznake za približno 91,2\,\% transakcija po trgovcu i
+94,3\,\% po zanimanju. Viši prag jače sažima prikaz, ali većem dijelu
+transakcija uklanja zaseban naziv. Pregled pragova 10, 20, 30 i 50 nalazi se
+u bilježnici. Izbor se zasniva na broju pojavljivanja, bez korištenja cilja.
 
-\textbf{Posljedice pripreme.} Pripremom je formiran reproduktivan postupak
-koji istovremeno čuva realističan odnos klasa za evaluaciju, sprečava
-preklapanje transakcija između skupova i omogućava primjenu algoritama na
-mješovitim numeričkim i kategoričkim podacima. Balansiranje treninga treba da
-poveća osjetljivost na rijetku klasu, dok će validacija i test pokazati koliko
-se taj dobitak zadržava u realističnim uslovima. Pripremljeni skupovi i
-pipeline koriste se u zadacima izgradnje i poređenja klasifikacijskih modela.
+Postavka \texttt{min\_frequency=20} spaja kategorije s manje od 20 redova
+u zajedničku rijetku grupu za svaki atribut. Nove trgovce i zanimanja
+usmjeravamo u tu grupu ako je prisutna; ostale nepoznate nominalne vrijednosti
+obrađujemo bez prekida transformacije. Svaka transakcija ostaje sačuvana.
+\input{tabele/kodiranje}
 
-\begin{table}[htbp]\centering
-\caption{Primijenjeni postupci pripreme podataka}\label{tab:priprema}
-\small
-\begin{tabularx}{\linewidth}{@{}p{.25\linewidth}Y Y@{}}\toprule
-Atribut(i) & Postupak & Razlog / posljedica \\ \midrule
-\texttt{is\_fraud} & Izdvajanje ciljne varijable prije transformacije ulaza &
-Sprječava da ciljna informacija bude korištena kao ulazni atribut. \\
-Numerički atributi & Medijalna imputacija; standardizacija samo u skaliranoj varijanti &
-Pipeline je robustan na nedostajuće vrijednosti i prilagođen algoritmu. \\
-Kategorički atributi & Imputacija najčešćom vrijednošću i one-hot kodiranje &
-Omogućava rad modela sa tekstualnim kategorijama i nepoznatim vrijednostima. \\
-Trening skup & Random undersampling legitimnih transakcija &
-Dobija se odnos 50/50 bez mijenjanja validacije i testa. \\
-Validacija i test & Bez balansiranja i bez ponovnog učenja transformacija &
-Metrike ostaju reprezentativne za izvorni odnos klasa. \\
-\bottomrule\end{tabularx}
-\end{table}
+Dobijamo 1\,026 kolona: 10 numeričkih, 67 za vrstu kupovine, spol i državu,
+552 za trgovca i 397 za zanimanje. Prikaz čuva zasebne kategorije za većinu
+transakcija, uz manje rijetkih one-hot kolona.
 
-\referencaKod{1.4 Priprema podataka: podjela skupa}
+\subsubsection*{Standardizacija i nedostajuće vrijednosti}
+Numeričke ulaze standardizujemo izrazom $z=(x-\mu)/\sigma$ poslije logaritamskih
+transformacija; one-hot kolone ostaju 0/1. Nema praznih vrijednosti. Kao rezervu
+uključujemo medijan za numeričke i najčešću vrijednost za nominalne ulaze.
+Medijan je otporan na duge repove, za razliku od osjetljivije aritmetičke sredine.
+
+Za prikaz pripreme oba cijela skupa koristimo jedan pretprocesor prilagođen
+uniji jedinstvenih transakcija. Tako imaju iste kategorije i skale, bez
+dvostrukog računanja zajedničkih redova. Pri primjeni na odvojene dijelove
+frekvencije, imputacija i skale određuju se isključivo iz trening podataka.
+\referencaKod{1.4-C Kodiranje i standardizacija}
+
+\subsubsection*{Pripremljeni skupovi za naredne korake}
+Svaki skup čuvamo u zasebnoj NPZ datoteci: \path{fraud_balanced_prepared.npz}
+i \path{fraud_15k_prepared.npz}. One sadrže cilj, oznake transakcija, nazive kolona,
+zajedničku kodiranu matricu i numeričke i kategoričke ulaze prije standardizacije
+i one-hot kodiranja. Datoteke čuvaju iste ulazne karakteristike uz različit broj
+i odnos klasa, pa se u kasnijem radu mogu pripremiti i podijeliti odvojeno.
+
+Kodirane matrice daju zajednički prikaz karakteristika u ovom odjeljku. Za obuku
+modela koriste se sačuvani ulazi prije kodiranja: podaci se prvo dijele, a grupisanje
+kategorija, imputacija i skale određuju se samo na trening dijelu. Ulazni CSV-ovi
+ostaju dostupni kao izvorni zapisi. Pripremljeni skupovi imaju 15\,012 i
+15\,000 redova (kod: \texttt{projekat.ipynb}, odjeljak \texttt{1.4-D}).
